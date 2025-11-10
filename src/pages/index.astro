@@ -1,15 +1,37 @@
 ---
-const title = "Astro";
+import Hero from "@/components/organisms/Hero/index.astro"
+import Header from "@/components/organisms/Header/index.astro"
+import About from "@/components/organisms/About/index.astro"
+import Skills from "@/components/organisms/Skills/index.astro"
+
+import "../styles/global.css"
 ---
 
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<title>{title}</title>
+		<link
+			rel="icon"
+			href="/favicon.svg"
+			type="image/svg+xml"
+			media="(prefers-color-scheme: light)"
+		/>
+		<link
+			rel="icon"
+			href="/favicon-white.svg"
+			type="image/svg+xml"
+			media="(prefers-color-scheme: dark)"
+		/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Raymundo Salazar - Fullstack JS Developer & UI/UX Designer</title>
 	</head>
 	<body>
-		<h1>{title}</h1>
+		<div class="min-h-screen bg-neutral-900">
+			<Header />
+			<Hero />
+			<About />
+			<Skills />
+		</div>
 	</body>
 </html>
