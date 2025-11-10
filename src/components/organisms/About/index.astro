@@ -1,0 +1,49 @@
+---
+import { HIGHLIGHTS, SKILLS } from "./constants"
+import AboutCard from "@/components/molecules/AboutCard/index.astro"
+---
+
+<section id="about" class="py-20 bg-neutral-800">
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<div class="text-center mb-16">
+			<h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Sobre mí</h2>
+			<div class="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div>
+		</div>
+
+		<div class="grid lg:grid-cols-2 gap-12 items-center">
+			<div class="space-y-6">
+				<p class="text-lg text-gray-300 leading-relaxed">
+					Soy un Fullstack JS Developer & UI/UX Designer con más de 12 años de experiencia
+					en desarrollo web y móvil. He liderado equipos de desarrollo y supervisado la
+					creación de aplicaciones escalables y de alto rendimiento, con enfoque en
+					arquitectura de software y experiencia de usuario.
+				</p>
+
+				<p class="text-lg text-gray-300 leading-relaxed">
+					Mi trayectoria incluye el liderazgo de equipos de desarrollo, implementación de
+					pipelines CI/CD, y la creación de sistemas de diseño cohesivos. He trabajado en
+					proyectos gubernamentales y del sector privado, siempre enfocándome en la
+					calidad del código, testing automatizado y experiencias de usuario intuitivas.
+				</p>
+
+				<div class="flex flex-wrap gap-3 mt-8">
+					{
+						SKILLS.map(skill => (
+							<span class="px-4 py-2 bg-blue-900 text-blue-200 rounded-full text-sm font-medium">
+								{skill}
+							</span>
+						))
+					}
+				</div>
+			</div>
+
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+				{
+					HIGHLIGHTS.map(({ icon: Icon, title, description }) => (
+						<AboutCard title={title} description={description} icon={Icon} />
+					))
+				}
+			</div>
+		</div>
+	</div>
+</section>
