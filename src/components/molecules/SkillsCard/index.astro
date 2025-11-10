@@ -1,0 +1,35 @@
+---
+const {
+	name,
+	icon: Icon,
+	category,
+	categoryName,
+	iconCategory: CategoryIcon,
+	categoryColor,
+	iconColor,
+	size,
+} = Astro.props
+
+import { CLASSES_SIZE } from "./constants"
+---
+
+<div
+	data-category={category}
+	class={`break-inside-avoid relative flex items-center justify-center bg-neutral-800 rounded-2xl p-6 py-12 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 gap-2 flex-col ${CLASSES_SIZE[size]} group skill-card`}
+>
+	<div
+		class={`absolute top-2 right-2 rounded-full py-2 px-3 text-center text-xs font-semibold text-white ${categoryColor} opacity-60`}
+	>
+		<CategoryIcon class="w-4 h-4 inline-block mr-1" />
+		{categoryName}
+	</div>
+	<div class="relative">
+		<Icon
+			className={`text-white w-10 h-10 group-hover:scale-110 transition-all duration-300 opacity-100 group-hover:opacity-0`}
+		/>
+		<Icon
+			className={`${iconColor} w-10 h-10 group-hover:scale-110 transition-all duration-300 absolute top-0 left-0 opacity-0 group-hover:opacity-100`}
+		/>
+	</div>
+	<span class="text-white opacity-60">{name}</span>
+</div>
