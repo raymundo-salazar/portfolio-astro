@@ -1,6 +1,8 @@
 ---
 import { ChevronDown, ChevronUp } from "@lucide/astro"
-const { id } = Astro.props
+import type { ShowMoreToggleProps } from "./types"
+
+const { id } = Astro.props as ShowMoreToggleProps
 ---
 
 <div
