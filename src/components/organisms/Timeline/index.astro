@@ -1,0 +1,60 @@
+---
+import { EXPERIENCES } from "./constants"
+
+import TimelineItem from "@/components/molecules/TimelineItem/index.astro"
+import ShowMoreToggle from "@/components/molecules/ShowMoreToggle/index.astro"
+---
+
+<section
+	id="timeline"
+	class="py-20 bg-neutral-800 relative transition-all duration-300 overflow-hidden"
+>
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<div class="text-center mb-16">
+			<h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Experiencia Profesional</h2>
+			<div class="w-24 h-1 bg-blue-600 mx-auto rounded-full mb-6"></div>
+			<p class="text-lg text-gray-300 max-w-2xl mx-auto">
+				Más de 12 años de trayectoria en desarrollo web, móvil y liderazgo técnico
+			</p>
+		</div>
+		<div class="relative">
+			<div
+				class="absolute left-8 md:left-1/2 transform md:-translate-x-px h-full w-0.5 bg-neutral-600"
+			>
+			</div>
+
+			<div class="space-y-12">
+				{EXPERIENCES.map((exp, index) => <TimelineItem exp={exp} index={index} />)}
+			</div>
+		</div>
+	</div>
+
+	<ShowMoreToggle id="toggle-timeline" />
+</section>
+<section
+	id="timeline-summary"
+	class="py-20 bg-neutral-800 relative transition-all duration-300 overflow-hidden"
+>
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+			<div class="text-center p-6 bg-neutral-700 rounded-xl shadow-md">
+				<div class="text-3xl font-bold text-blue-400 mb-2">12+</div>
+				<div class="text-sm text-gray-300">Años de Experiencia</div>
+			</div>
+			<div class="text-center p-6 bg-neutral-700 rounded-xl shadow-md">
+				<div class="text-3xl font-bold text-green-400 mb-2">11</div>
+				<div class="text-sm text-gray-300">Empresas</div>
+			</div>
+			<div class="text-center p-6 bg-neutral-700 rounded-xl shadow-md">
+				<div class="text-3xl font-bold text-purple-400 mb-2">10+</div>
+				<div class="text-sm text-gray-300">Apps en Producción</div>
+			</div>
+			<div class="text-center p-6 bg-neutral-700 rounded-xl shadow-md">
+				<div class="text-3xl font-bold text-orange-400 mb-2">5</div>
+				<div class="text-sm text-gray-300">Roles de Liderazgo</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script src="./script.ts"></script>
