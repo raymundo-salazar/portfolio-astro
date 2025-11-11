@@ -24,8 +24,6 @@ export default [
 	js.configs.recommended,
 	...astro.configs.recommended,
 	prettier,
-
-	// Archivos Astro
 	{
 		files: ["**/*.astro"],
 		languageOptions: {
@@ -38,14 +36,11 @@ export default [
 		plugins: {
 			astro,
 		},
-		// 🚨 FIX CLAVE
 		rules: {
 			...astro.configs.recommended[0].rules,
 			"prettier/prettier": "off", // <--- Desactivar para evitar el bug
 		},
 	},
-
-	// Archivos TS/JS
 	{
 		files: ["**/*.{js,jsx,ts,tsx}"],
 		languageOptions: {
@@ -62,8 +57,6 @@ export default [
 			"prettier/prettier": "error",
 		},
 	},
-
-	// Archivos JSON
 	{
 		files: ["**/*.json"],
 		languageOptions: {
@@ -74,6 +67,16 @@ export default [
 		},
 		rules: {
 			"prettier/prettier": "error",
+		},
+	},
+	{
+		files: ["**/*.{ts,tsx,js,jsx}"],
+		languageOptions: {
+			globals: {
+				window: true,
+				document: true,
+				navigator: true,
+			},
 		},
 	},
 ]
