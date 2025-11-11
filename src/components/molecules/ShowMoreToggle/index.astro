@@ -1,0 +1,15 @@
+---
+import { ChevronDown, ChevronUp } from "@lucide/astro"
+const { id } = Astro.props
+---
+
+<div
+	class="w-full p-5 absolute bottom-0 left-0 flex item-center justify-center gap-3 from-black/40 to-black/0 bg-linear-to-t cursor-pointer hover:from-black/60 transition-all duration-300 text-white/30 hover:text-white z-10"
+	id={id}
+>
+	<ChevronUp class="w-6 h-6 hidden" />
+	<ChevronDown class="w-6 h-6" />
+	<span>Mostrar más</span>
+	<ChevronUp class="w-6 h-6 hidden" />
+	<ChevronDown class="w-6 h-6" />
+</div>
