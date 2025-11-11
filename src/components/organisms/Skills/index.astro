@@ -1,8 +1,8 @@
 ---
-import { ChevronDown, ChevronUp } from "@lucide/astro"
 import { SHUFFLED_SKILLS, SKILL_CATEGORIES } from "./constants"
 
 import SkillsCard from "@/components/molecules/SkillsCard/index.astro"
+import ShowMoreToggle from "@/components/molecules/ShowMoreToggle/index.astro"
 ---
 
 <section
@@ -51,16 +51,7 @@ import SkillsCard from "@/components/molecules/SkillsCard/index.astro"
 			})
 		}
 	</div>
-	<div
-		class="w-full p-5 absolute bottom-0 left-0 flex item-center justify-center gap-3 text-white from-white/20 to-white/0 bg-linear-to-t cursor-pointer hover:from-white/30 transition-all duration-300"
-		id="toggle-skills"
-	>
-		<ChevronUp class="w-6 h-6 hidden" />
-		<ChevronDown class="w-6 h-6" />
-		<span>Mostrar más</span>
-		<ChevronUp class="w-6 h-6 hidden" />
-		<ChevronDown class="w-6 h-6" />
-	</div>
+	<ShowMoreToggle id="toggle-skills" />
 </section>
 
 <script is:inline>
