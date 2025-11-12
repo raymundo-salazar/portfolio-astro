@@ -16,13 +16,8 @@ const color = getTypeColor(exp.type)
 	} flex-col md:flex-row`}
 >
 	<div
-		class="absolute left-8 md:left-1/2 transform -translate-x-1/2 w-4 h-4 bg-neutral-600 rounded-full border-4 border-gray-800 z-10"
-	>
-		<div class={`w-full h-full ${exp.color} rounded-full`}></div>
-	</div>
-	<div
-		class={`w-full md:w-5/12 ${
-			index % 2 === 0 ? "md:pr-2 ml-16 md:ml-0" : "md:pl-2 ml-16 md:ml-0"
+		class={`timeline-card w-full md:w-5/12 ${
+			index % 2 === 0 ? "md:pr-2 ml-0 md:ml-0" : "md:pl-2 ml-0 md:ml-0"
 		}`}
 	>
 		<div
@@ -87,5 +82,32 @@ const color = getTypeColor(exp.type)
 			</div>
 		</div>
 	</div>
+	<div
+		class="absolute left-4 top-2 md:left-1/2 transform -translate-x-1/2 w-4 h-4 bg-neutral-700 md:bg-neutral-600 rounded-full border-4 border-neutral-700 md:border-neutral-800 z-10 transition-all duration-300 flex items-center justify-center timeline-dot"
+	>
+		<div class={`w-full h-full ${exp.color} rounded-full flex items-center justify-center`}>
+			<div
+				class="bg-neutral-700 md:bg-neutral-800 rounded-full transition-all duration-300 internal-dot"
+			>
+			</div>
+		</div>
+	</div>
 	<div class="hidden md:block w-2/12 h-3"></div>
 </div>
+
+<style is:inline>
+	.timeline-card:hover ~ .timeline-dot {
+		width: 1.6rem;
+		height: 1.6rem;
+		left: calc(var(--spacing) * 6);
+	}
+
+	.internal-dot {
+		transition: all 0.3s ease;
+	}
+
+	.timeline-card:hover ~ .timeline-dot .internal-dot {
+		width: calc(2 / 3 * 100%);
+		height: calc(2 / 3 * 100%);
+	}
+</style>
