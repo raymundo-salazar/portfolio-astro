@@ -102,6 +102,13 @@ const color = getTypeColor(exp.type)
 		left: calc(var(--spacing) * 6);
 	}
 
+	@media (min-width: 48rem) {
+		.timeline-card:hover ~ .timeline-dot {
+			left: 50%;
+			top: calc(var(--spacing) * 1);
+		}
+	}
+
 	.internal-dot {
 		transition: all 0.3s ease;
 	}
