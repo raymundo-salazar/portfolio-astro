@@ -1,5 +1,9 @@
 ---
-import { ArrowDown, Github, Linkedin, Mail } from "@lucide/astro"
+import { ArrowDown } from "@lucide/astro"
+
+import HeroSocialIcon from "@/components/molecules/HeroSocialIcon/index.astro"
+
+import { SOCIAL_LINKS } from "./constants"
 ---
 
 <section
@@ -34,27 +38,7 @@ import { ArrowDown, Github, Linkedin, Mail } from "@lucide/astro"
 				</button>
 
 				<div class="flex space-x-4">
-					<a
-						href="mailto:raymundo.salser@hotmail.com"
-						class="p-3 bg-neutral-800 rounded-full shadow-md hover:shadow-lg transition-all duration-300 text-gray-300 hover:text-blue-400"
-						target="_blank"
-					>
-						<Mail class="h-6 w-6" />
-					</a>
-					<a
-						href="https://github.com/raymundo-salazar"
-						class="p-3 bg-neutral-800 rounded-full shadow-md hover:shadow-lg transition-all duration-300 text-gray-300 hover:text-blue-400"
-						target="_blank"
-					>
-						<Github class="h-6 w-6" />
-					</a>
-					<a
-						href="https://linkedin.com/in/raymundosalazar"
-						class="p-3 bg-neutral-800 rounded-full shadow-md hover:shadow-lg transition-all duration-300 text-gray-300 hover:text-blue-400"
-						target="_blank"
-					>
-						<Linkedin class="h-6 w-6" />
-					</a>
+					{SOCIAL_LINKS.map(({ url, icon }) => <HeroSocialIcon url={url} icon={icon} />)}
 				</div>
 			</div>
 
