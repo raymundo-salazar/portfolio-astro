@@ -1,0 +1,88 @@
+---
+import { ArrowUp } from "@lucide/astro"
+
+import { SOCIAL_LINKS } from "@/components/organisms/Hero/constants"
+import FooterSocialLink from "@/components/molecules/FooterSocialLink/index.astro"
+import { NAV_ITEMS } from "@/components/organisms/Header/constants"
+
+const currentYear = new Date().getFullYear()
+---
+
+<footer class="bg-neutral-800 text-white">
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+		<div class="grid md:grid-cols-4 gap-8">
+			{/* Brand Section */}
+			<div class="md:col-span-2">
+				<div class="flex items-center space-x-2 mb-4">
+					<img src="/logo/logo-icon-white.svg" alt="Raymundo Salazar" class="h-14 w-14" />
+					<span class="text-xl font-bold">Raymundo Salazar</span>
+				</div>
+				<p class="text-gray-400 mb-6 leading-relaxed">
+					Lead UI/UX & Mobile Developer especializado en React, React Native y Node.js.
+					Creando experiencias digitales excepcionales con enfoque en liderazgo técnico y
+					arquitectura escalable.
+				</p>
+				<div class="flex space-x-4">
+					{
+						SOCIAL_LINKS.map(link => (
+							<FooterSocialLink name={link.name} url={link.url} icon={link.icon} />
+						))
+					}
+				</div>
+			</div>
+
+			{/* Quick Links */}
+			<div>
+				<h3 class="text-lg font-semibold mb-4">Enlaces Rápidos</h3>
+				<ul class="space-y-3">
+					{
+						NAV_ITEMS.map(link => (
+							<li>
+								<button
+									data-section={link.id}
+									class="text-gray-400 hover:text-white transition-colors duration-200 block"
+								>
+									{link.label}
+								</button>
+							</li>
+						))
+					}
+				</ul>
+			</div>
+
+			{/* Contact Info */}
+			<div>
+				<h3 class="text-lg font-semibold mb-4">Contacto</h3>
+				<div class="space-y-3 text-gray-400">
+					<p>
+						<a target="_blank" href="mailto:raymundo.salser@hotmail.com"
+							>raymundo.salser@hotmail.com</a
+						>
+					</p>
+					<p><a target="_blank" href="phone:+528186843534">+52 818 6843 534</a></p>
+					<p>San Nicolás, NL, México</p>
+				</div>
+			</div>
+		</div>
+
+		{/* Bottom Section */}
+		<div
+			class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center"
+		>
+			<div class="flex items-center text-gray-400 mb-4 md:mb-0">
+				<span>© {currentYear} Raymundo Salazar.</span>
+			</div>
+
+			{/* Back to Top Button */}
+			<button
+				id="scroll-to-top"
+				class="group bg-blue-600 hover:bg-blue-700 p-3 rounded-full transition-all duration-300 transform hover:scale-110 shadow-lg hover:shadow-xl"
+				aria-label="Volver arriba"
+			>
+				<ArrowUp class="h-5 w-5 group-hover:-translate-y-1 transition-transform" />
+			</button>
+		</div>
+	</div>
+</footer>
+
+<script src="./script.ts"></script>
