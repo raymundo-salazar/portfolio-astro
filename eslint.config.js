@@ -70,7 +70,7 @@ export default [
 		},
 	},
 	{
-		files: ["**/*.{ts,tsx,js,jsx}"],
+		files: ["**/*.{ts,tsx,js,jsx,astro}"],
 		languageOptions: {
 			globals: {
 				window: true,
@@ -83,6 +83,7 @@ export default [
 				alert: true,
 				setTimeout: true,
 				console: true,
+				Element: true,
 			},
 		},
 	},

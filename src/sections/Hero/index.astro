@@ -1,0 +1,73 @@
+---
+import { ArrowDown } from "@lucide/astro"
+
+import HeroSocialIcon from "@/components/molecules/HeroSocialIcon/index.astro"
+
+import { SOCIAL_LINKS } from "./constants"
+---
+
+<section
+	id="home"
+	class="min-h-screen flex items-center justify-center bg-linear-to-br from-neutral-900 via-neutral-800 to-neutral-900 pt-20"
+>
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+		<div class="animate-fade-in-up">
+			<img
+				src={"/logo/logo-white.svg"}
+				alt="Raymundo Salazar"
+				class="w-10/12 md:w-[500px] mx-auto mb-10"
+			/>
+
+			<p class="text-xl sm:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+				Fullstack JS Developer & UI/UX Designer con más de 12 años de experiencia en
+				desarrollo web y móvil. Especializado en liderazgo técnico, TypeScript, React, React
+				Native y Node.js.
+			</p>
+
+			<div
+				class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-12"
+			>
+				<button
+					id="scroll-button"
+					class="group bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 transform shadow-lg hover:shadow-xl"
+				>
+					Ver mi trabajo
+					<ArrowDown
+						class="inline-block ml-2 h-5 w-5 group-hover:translate-y-1 transition-transform"
+					/>
+				</button>
+
+				<div class="flex space-x-4">
+					{
+						SOCIAL_LINKS.map(({ url, icon, name, title }) => (
+							<HeroSocialIcon url={url} icon={icon} name={name} title={title} />
+						))
+					}
+				</div>
+			</div>
+
+			{/* Floating elements for visual interest */}
+			<div
+				class="absolute top-20 left-10 w-20 h-20 opacity-10 animate-float bg-neutral-600 rounded-full"
+			>
+			</div>
+			<div
+				class="absolute top-40 right-20 w-16 h-16 opacity-15 animate-float-delayed bg-blue-900 rounded-full"
+			>
+			</div>
+			<div
+				class="absolute bottom-20 left-1/4 w-12 h-12 opacity-20 animate-float bg-blue-800 rounded-full"
+			>
+			</div>
+		</div>
+	</div>
+</section>
+<script is:inline>
+	document.addEventListener("DOMContentLoaded", () => {
+		const button = document.getElementById("scroll-button")
+		button?.addEventListener("click", () => {
+			const element = document.getElementById("about")
+			if (element) element.scrollIntoView({ behavior: "smooth" })
+		})
+	})
+</script>

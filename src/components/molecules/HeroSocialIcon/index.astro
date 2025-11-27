@@ -1,13 +1,16 @@
 ---
 import type { HeroSocialIconProps } from "./types"
 
-const { url, icon: Icon } = Astro.props as HeroSocialIconProps
+const { url, icon: Icon, name, title } = Astro.props as HeroSocialIconProps
 ---
 
 <a
 	href={url}
-	class="p-3 bg-neutral-800 rounded-full shadow-md hover:shadow-lg transition-all duration-300 text-gray-300 hover:text-blue-400"
+	class="p-3 bg-neutral-800 rounded-full shadow-md hover:shadow-lg transition-all duration-300 text-gray-300 hover:text-blue-400 cursor-pointer flex gap-2"
 	target="_blank"
+	rel="noopener noreferrer"
+	title={name}
 >
 	<Icon className="h-6 w-6" />
+	{title && <span>{title}</span>}
 </a>
