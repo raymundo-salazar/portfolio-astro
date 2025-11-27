@@ -1,0 +1,202 @@
+---
+import { X, ExternalLink, ChevronLeft, ChevronRight, Check } from "@lucide/astro"
+import { SiAndroid, SiApple, SiGithub } from "react-icons/si"
+
+import type { ProjectItemProps } from "@/components/molecules/ProjectItem/types"
+
+const { project } = Astro.props as { project: ProjectItemProps }
+---
+
+<div
+	class="fixed inset-0 items-center justify-center z-50 p-4 project-modal top-0 left-0 pointer-events-none flex"
+	id={"modal-" + project.title.replace(/\s+/g, "-").toLowerCase()}
+>
+	<!-- Backdrop -->
+	<div
+		class="absolute inset-0 bg-black/60 backdrop-blur-sm top-0 left-0 w-screen h-screen close-modal backdrop opacity-0 transition-opacity duration-300"
+	>
+	</div>
+
+	<!-- Modal -->
+	<div
+		class="relative bg-neutral-700 text-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden opacity-0 -translate-y-10 transition-all duration-300 modal-content"
+	>
+		<!-- Header -->
+		<div class="flex items-center justify-between p-4 border-b border-slate-200">
+			<div>
+				<h2 class="text-xl font-bold text-white-900">{project.title}</h2>
+				<div class="flex items-center gap-3 mt-1 text-sm text-white-500">
+					<span>{project.company}</span>
+					<span class="w-1 h-1 bg-neutral-300 rounded-full"></span>
+					<span>{project.year}</span>
+				</div>
+			</div>
+			<button class="p-2 hover:bg-neutral-100 rounded-full close-modal">
+				<X class="w-5 h-5 text-white-600" />
+			</button>
+		</div>
+
+		<!-- Content -->
+		<div class="overflow-y-auto max-h-[calc(90vh-80px)]">
+			<!-- Image Carousel -->
+			{
+				project.images && project.images.length > 0 && (
+					<div class="relative">
+						<div class="aspect-video bg-neutral-100 overflow-hidden">
+							<img
+								src={project.images[0]}
+								class="w-full h-full object-cover transition duration-300"
+							/>
+						</div>
+
+						{project.images.length > 1 && (
+							<>
+								<button class="absolute left-4 top-1/2 -translate-y-1/2 bg-neutral/90 p-2 rounded-full shadow hover:scale-110 transition">
+									<ChevronLeft class="w-5 h-5 text-white-700" />
+								</button>
+
+								<button class="absolute right-4 top-1/2 -translate-y-1/2 bg-neutral/90 p-2 rounded-full shadow hover:scale-110 transition">
+									<ChevronRight class="w-5 h-5 text-white-700" />
+								</button>
+
+								{/* <div
+								 class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2"
+								 >
+								 {
+									 project.images.map((_, i) => (
+									 <button
+										 class={`dot w-2 h-2 rounded-full transition ${i === 0 ? "bg-neutral" : "bg-neutral/40"}`}
+									 ></button>
+									 ))
+								 }
+								 </div> */}
+							</>
+						)}
+					</div>
+				)
+			}
+
+			<!-- Details -->
+			<div
+				class="p-6 text-white-700 leading-relaxed space-y-6 flex flex-col md:flex-row md:justify-between md:gap-6"
+			>
+				<div class="w-full md:w-2/3 space-y-6">
+					<div>
+						<h3 class="text-lg font-semibold text-white-900 mb-3">Descripción</h3>
+						<p>{project.description}</p>
+					</div>
+
+					<div>
+						<h3 class="text-lg font-semibold text-white-900 mb-3">
+							Caracteristicas principales
+						</h3>
+						<ul class="grid grid-cols-1 md:grid-cols-2 gap-2 list-inside">
+							{
+								project.features.map((feature: string) => (
+									<li class="flex items-center gap-2">
+										<Check size={16} class="text-green-600" />
+										{feature}
+									</li>
+								))
+							}
+						</ul>
+					</div>
+				</div>
+				<div class="w-full md:w-1/3 flex flex-col gap-8">
+					<div>
+						<h3 class="text-lg font-semibold text-white-900 mb-3">Tecnologías</h3>
+						<div class="flex flex-wrap gap-2">
+							{
+								project.technologies.map((t: string) => (
+									<span class="px-3 py-1 bg-neutral-900 rounded-full text-sm">
+										{t}
+									</span>
+								))
+							}
+						</div>
+					</div>
+
+					<div>
+						<h3 class="text-lg font-semibold text-white-900 mb-3">
+							Información general
+						</h3>
+						<div class="flex flex-wrap gap-2 text-sm opacity-75">
+							<div class="w-full flex justify-between gap-2">
+								<span class="font-medium">Rol:</span>
+								<span>{project.role}</span>
+							</div>
+							<div class="w-full flex justify-between gap-2">
+								<span class="font-medium">Duración:</span>
+								<span>{project.duration}</span>
+							</div>
+							<div class="w-full flex justify-between gap-2">
+								<span class="font-medium">Modalidad:</span>
+								<span>{project.workMode}</span>
+							</div>
+							<div class="w-full flex justify-between gap-2">
+								<span class="font-medium">Empresa:</span>
+								<span>{project.company}</span>
+							</div>
+							<div class="w-full flex justify-between gap-2">
+								<span class="font-medium">Año:</span>
+								<span>{project.year}</span>
+							</div>
+						</div>
+					</div>
+
+					<!-- Links -->
+					<div class="space-y-3">
+						{
+							project.appleUrl && (
+								<a
+									href={project.appleUrl}
+									target="_blank"
+									class="flex items-center px-4 py-3 bg-neutral-900 rounded-lg text-white hover:bg-neutral-800"
+								>
+									<SiApple className="w-4 h-4 mr-3" /> Ver en App Store
+								</a>
+							)
+						}
+
+						{
+							project.androidUrl && (
+								<a
+									href={project.androidUrl}
+									target="_blank"
+									class="flex items-center px-4 py-3 bg-neutral-900 rounded-lg text-white hover:bg-neutral-800"
+								>
+									<SiAndroid className="w-4 h-4 mr-3" /> Ver en Google Play
+								</a>
+							)
+						}
+
+						{
+							project.liveUrl && (
+								<a
+									href={project.liveUrl}
+									target="_blank"
+									class="flex items-center px-4 py-3 bg-neutral-900 rounded-lg text-white hover:bg-neutral-800"
+								>
+									<ExternalLink class="w-4 h-4 mr-3" /> Ver web site
+								</a>
+							)
+						}
+
+						{
+							project.githubUrl && (
+								<a
+									href={project.githubUrl}
+									target="_blank"
+									class="flex items-center px-4 py-3 border border-slate-300 rounded-lg hover:bg-neutral-50"
+								>
+									<SiGithub className="w-4 h-4 mr-3" /> Ver código
+								</a>
+							)
+						}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script src="./scripts.ts"></script>
