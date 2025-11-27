@@ -1,0 +1,29 @@
+---
+import ProjectItem from "@/components/molecules/ProjectItem/index.astro"
+import ShowMoreToggle from "@/components/molecules/ShowMoreToggle/index.astro"
+
+import { PROJECTS } from "./constants"
+---
+
+<section
+	id="projects"
+	class="py-20 bg-neutral-800 relative transition-all duration-300 overflow-hidden"
+>
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<div class="text-center mb-16">
+			<h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Proyectos Destacados</h2>
+			<div class="w-24 h-1 bg-blue-600 mx-auto rounded-full mb-6"></div>
+			<p class="text-lg text-gray-300 max-w-2xl mx-auto">
+				Una selección de proyectos que demuestran mi experiencia técnica y visión creativa
+			</p>
+		</div>
+
+		{/* Projects Grid */}
+		<div class="columns-2 md:columns-3 gap-8 space-y-8">
+			{PROJECTS.map(project => <ProjectItem {...project} />)}
+		</div>
+	</div>
+	<ShowMoreToggle id="toggle-projects" />
+</section>
+
+<script src="./script.ts"></script>
