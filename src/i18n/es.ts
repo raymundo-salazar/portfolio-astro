@@ -560,4 +560,35 @@ export default {
 			},
 		},
 	},
+	contact: {
+		title: "Trabajemos juntos",
+		description:
+			"¿Tienes un proyecto en mente o simplemente quieres saludar? ¡Estoy aquí para ayudarte! No dudes en contactarme para discutir cómo puedo contribuir a tu próximo desafío.",
+		form: {
+			title: "Envíame un mensaje",
+			name: "Nombre",
+			email: "Correo Electrónico",
+			subject: "Asunto",
+			message: "Mensaje",
+			send: "Enviar Mensaje",
+			sending: "Enviando...",
+			successMessage: "¡Gracias por contactarme! Te responderé lo antes posible.",
+			errorMessage:
+				"Hubo un error al enviar tu mensaje. Por favor, inténtalo de nuevo más tarde.",
+			placeholders: {
+				name: "Tu nombre",
+				email: "tu@email.com",
+				subject: "¿En qué puedo ayudarte?",
+				message: "Cuéntame sobre tu proyecto o idea...",
+			},
+		},
+		info: {
+			title: "Información de Contacto",
+			description:
+				"Estoy siempre interesado en nuevos desafíos y oportunidades de colaboración. No dudes en contactarme para discutir tu próximo proyecto.",
+			email: "Correo Electrónico",
+			phone: "Teléfono",
+			location: "Ubicación",
+		},
+	},
 }

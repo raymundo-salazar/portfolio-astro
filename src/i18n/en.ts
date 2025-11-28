@@ -560,4 +560,35 @@ export default {
 			},
 		},
 	},
+	contact: {
+		title: "Let's work together",
+		description:
+			"Do you have a project in mind or just want to say hello? I'm here to help! Feel free to contact me to discuss how I can contribute to your next challenge.",
+		form: {
+			title: "Contact Me",
+			name: "Name",
+			email: "Email",
+			subject: "Subject",
+			message: "Message",
+			send: "Send Message",
+			sending: "Sending...",
+			successMessage:
+				"Thank you for contacting me! I will get back to you as soon as possible.",
+			errorMessage: "There was an error sending your message. Please try again later.",
+			placeholders: {
+				name: "Your Name",
+				email: "your@email.com",
+				subject: "How can I help you?",
+				message: "Tell me about your project or idea...",
+			},
+		},
+		info: {
+			title: "Contact Information",
+			description:
+				"I am always interested in new challenges and collaboration opportunities. Feel free to contact me to discuss your next project.",
+			email: "Email",
+			phone: "Phone",
+			location: "Location",
+		},
+	},
 }

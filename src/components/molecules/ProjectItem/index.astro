@@ -12,7 +12,6 @@ const { images, liveUrl, githubUrl, appleUrl, androidUrl, technologies, key } =
 const currentLang = Astro.params.lang || "es"
 const t = useTranslation(currentLang as "es" | "en")
 const projectData = t.projects.list[key as keyof typeof t.projects.list]
-console.log("projectData", projectData, key)
 ---
 
 <ProjectModal project={Astro.props} />
