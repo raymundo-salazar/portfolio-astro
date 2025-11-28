@@ -3,23 +3,19 @@ import { Code, Palette, Zap, Users } from "@lucide/astro"
 export const HIGHLIGHTS = [
 	{
 		icon: Code,
-		title: "Lead Developer",
-		description: "Liderazgo de equipos, arquitectura y desarrollo fullstack",
+		key: "lead",
 	},
 	{
 		icon: Palette,
-		title: "Diseño UX/UI",
-		description: "Sistemas de diseño, prototyping y experiencias de usuario",
+		key: "design",
 	},
 	{
 		icon: Zap,
-		title: "Mobile Development",
-		description: "React Native, aplicaciones híbridas y nativas",
+		key: "mobile",
 	},
 	{
 		icon: Users,
-		title: "CI/CD & DevOps",
-		description: "Pipelines automatizados, testing y deployment",
+		key: "devops",
 	},
 ]
 
