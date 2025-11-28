@@ -1,7 +1,12 @@
 ---
+import { useTranslation } from "@/i18n"
+
 import type { HeroSocialIconProps } from "./types"
 
 const { url, icon: Icon, name, title } = Astro.props as HeroSocialIconProps
+
+const currentLang = Astro.params.lang || "es"
+const t = useTranslation(currentLang as "es" | "en")
 ---
 
 <a
@@ -12,5 +17,5 @@ const { url, icon: Icon, name, title } = Astro.props as HeroSocialIconProps
 	title={name}
 >
 	<Icon className="h-6 w-6" />
-	{title && <span>{title}</span>}
+	{title && <span>{t.hero[title as keyof typeof t.hero]}</span>}
 </a>

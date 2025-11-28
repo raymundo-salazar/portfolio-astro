@@ -2,8 +2,12 @@
 import { ArrowDown } from "@lucide/astro"
 
 import HeroSocialIcon from "@/components/molecules/HeroSocialIcon/index.astro"
+import { useTranslation } from "@/i18n"
 
 import { SOCIAL_LINKS } from "./constants"
+
+const currentLang = Astro.params.lang || "es"
+const t = useTranslation(currentLang as "es" | "en")
 ---
 
 <section
@@ -13,15 +17,17 @@ import { SOCIAL_LINKS } from "./constants"
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
 		<div class="animate-fade-in-up">
 			<img
-				src={"/logo/logo-white.svg"}
+				src="/logo/logo-white.webp"
 				alt="Raymundo Salazar"
-				class="w-10/12 md:w-[500px] mx-auto mb-10"
+				width="500"
+				height="330.66"
+				fetchpriority="high"
+				loading="eager"
+				class="w-full object-cover mx-auto rounded-xl mb-10 max-w-[500px]"
 			/>
 
 			<p class="text-xl sm:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-				Fullstack JS Developer & UI/UX Designer con más de 12 años de experiencia en
-				desarrollo web y móvil. Especializado en liderazgo técnico, TypeScript, React, React
-				Native y Node.js.
+				{t.hero.text}
 			</p>
 
 			<div
@@ -31,7 +37,7 @@ import { SOCIAL_LINKS } from "./constants"
 					id="scroll-button"
 					class="group bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 transform shadow-lg hover:shadow-xl"
 				>
-					Ver mi trabajo
+					{t.hero.myWork}
 					<ArrowDown
 						class="inline-block ml-2 h-5 w-5 group-hover:translate-y-1 transition-transform"
 					/>
