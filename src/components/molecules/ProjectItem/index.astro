@@ -1,18 +1,23 @@
 ---
 import { ExternalLink, Eye, MoveRight } from "@lucide/astro"
-import { SiGithub } from "react-icons/si"
+import { SiAndroid, SiApple, SiGithub } from "react-icons/si"
 
 import ProjectModal from "@/components/organisms/projectModal/index.astro"
+import { useTranslation } from "@/i18n"
 
 import type { ProjectItemProps } from "./types"
 
-const { images, title, liveUrl, githubUrl, shortDescription, technologies } =
+const { images, liveUrl, githubUrl, appleUrl, androidUrl, technologies, key } =
 	Astro.props as ProjectItemProps
+const currentLang = Astro.params.lang || "es"
+const t = useTranslation(currentLang as "es" | "en")
+const projectData = t.projects.list[key as keyof typeof t.projects.list]
+console.log("projectData", projectData, key)
 ---
 
 <ProjectModal project={Astro.props} />
 <div
-	id={title.replace(/\s+/g, "-").toLowerCase()}
+	id={projectData.title.replace(/\s+/g, "-").toLowerCase()}
 	class="group bg-neutral-700 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden project-item"
 >
 	{
@@ -20,7 +25,7 @@ const { images, title, liveUrl, githubUrl, shortDescription, technologies } =
 			<div class="relative overflow-hidden cursor-pointer more-details">
 				<img
 					src={images[0]}
-					alt={title}
+					alt={projectData.title}
 					class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
 				/>
 				<div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-start justify-end opacity-0 group-hover:opacity-100 p-3">
@@ -38,9 +43,9 @@ const { images, title, liveUrl, githubUrl, shortDescription, technologies } =
 		<h3
 			class="text-xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors cursor-pointer more-details"
 		>
-			{title}
+			{projectData.title}
 		</h3>
-		<p class="text-gray-300 mb-4 leading-relaxed">{shortDescription}</p>
+		<p class="text-gray-300 mb-4 leading-relaxed">{projectData.shortDescription}</p>
 
 		<div class="flex flex-wrap gap-2">
 			{
@@ -55,15 +60,38 @@ const { images, title, liveUrl, githubUrl, shortDescription, technologies } =
 			<span
 				class="text-white text-sm flex items-center gap-1 group-hover:text-blue-400 transition-colors mr-auto cursor-pointer more-details"
 			>
-				Ver detalles
+				{t.projects.seeDetails}
 				<MoveRight class="h-4 w-4 group-hover:ml-1 transition-all duration-300" />
 			</span>
 			<div class="flex items-center gap-2 opacity-60">
+				{
+					appleUrl && (
+						<a
+							href={appleUrl}
+							class="p-3 rounded-full transition-colors text-white hover:text-blue-400"
+							target="_blank"
+						>
+							<SiApple className="h-5 w-5" />
+						</a>
+					)
+				}
+				{
+					androidUrl && (
+						<a
+							href={androidUrl}
+							class="p-3 rounded-full transition-colors text-white hover:text-blue-400"
+							target="_blank"
+						>
+							<SiAndroid className="h-5 w-5" />
+						</a>
+					)
+				}
 				{
 					liveUrl && (
 						<a
 							href={liveUrl}
 							class="p-3 rounded-full transition-colors text-white hover:text-blue-400"
+							target="_blank"
 						>
 							<ExternalLink class="h-5 w-5" />
 						</a>
@@ -74,6 +102,7 @@ const { images, title, liveUrl, githubUrl, shortDescription, technologies } =
 						<a
 							href={githubUrl}
 							class="p-3 rounded-full transition-colors text-white hover:text-blue-400"
+							target="_blank"
 						>
 							<SiGithub className="h-5 w-5" />
 						</a>

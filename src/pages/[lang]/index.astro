@@ -11,6 +11,7 @@ import Contact from "@/sections/Contact/index.astro"
 import Footer from "@/sections/Footer/index.astro"
 
 import "@/styles/global.css"
+import { useTranslation } from "@/i18n"
 
 export function getStaticPaths() {
 	return [{ params: { lang: "es" } }, { params: { lang: "en" } }]
@@ -19,6 +20,8 @@ export function getStaticPaths() {
 export const defaultRedirect = "/es"
 
 const lang = Astro.params.lang
+
+const t = useTranslation(lang as "es" | "en")
 ---
 
 <html lang={lang}>
@@ -38,7 +41,15 @@ const lang = Astro.params.lang
 			media="(prefers-color-scheme: dark)"
 		/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Raymundo Salazar - Fullstack JS Developer & UI/UX Designer</title>
+		<title>{t.generals.title}</title>
+		<meta name="description" content={t.hero.text} />
+		<meta name="author" content="Raymundo Salazar" />
+		<meta
+			name="keywords"
+			content="Raymundo Salazar, portfolio, developer, fullstack, javascript, ui/ux, designer"
+		/>
+		<meta name="robots" content="index, follow" />
+		<meta name="language" content={lang} />
 		<Analytics />
 	</head>
 	<body class="bg-neutral-900">

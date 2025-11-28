@@ -1,8 +1,12 @@
 ---
 import ProjectItem from "@/components/molecules/ProjectItem/index.astro"
 import ShowMoreToggle from "@/components/molecules/ShowMoreToggle/index.astro"
+import { useTranslation } from "@/i18n"
 
 import { PROJECTS } from "./constants"
+
+const currentLang = Astro.params.lang || "es"
+const t = useTranslation(currentLang as "es" | "en")
 ---
 
 <section
@@ -11,15 +15,15 @@ import { PROJECTS } from "./constants"
 >
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="text-center mb-16">
-			<h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Proyectos Destacados</h2>
+			<h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">{t.projects.title}</h2>
 			<div class="w-24 h-1 bg-blue-600 mx-auto rounded-full mb-6"></div>
 			<p class="text-lg text-gray-300 max-w-2xl mx-auto">
-				Una selección de proyectos que demuestran mi experiencia técnica y visión creativa
+				{t.projects.description}
 			</p>
 		</div>
 
 		{/* Projects Grid */}
-		<div class="columns-2 md:columns-3 gap-8 space-y-8">
+		<div class="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
 			{PROJECTS.map(project => <ProjectItem {...project} />)}
 		</div>
 	</div>
