@@ -21,7 +21,7 @@ export const SOCIAL_LINKS = [
 	{
 		name: "Curriculum Vitae",
 		title: "downloadCV",
-		url: `/curriculum-vitae/Raymundo Salazar - ES.pdf`,
+		url: `/curriculum-vitae/Raymundo Salazar - {{LANG}}.pdf`,
 		icon: Download,
 	},
 ]

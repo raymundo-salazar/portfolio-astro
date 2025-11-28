@@ -10,7 +10,7 @@ const t = useTranslation(currentLang as "es" | "en")
 ---
 
 <a
-	href={url}
+	href={url.replaceAll("{{LANG}}", currentLang.toUpperCase())}
 	class="p-3 bg-neutral-800 rounded-full shadow-md hover:shadow-lg transition-all duration-300 text-gray-300 hover:text-blue-400 cursor-pointer flex gap-2"
 	target="_blank"
 	rel="noopener noreferrer"
