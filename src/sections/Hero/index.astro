@@ -27,7 +27,7 @@ const t = useTranslation(currentLang as "es" | "en")
 			/>
 
 			<p class="text-xl sm:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
-				{t.hero.text}
+				{t.hero.text.replaceAll("{{YEARS}}", (new Date().getFullYear() - 2013).toString())}
 			</p>
 
 			<div
