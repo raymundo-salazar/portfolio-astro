@@ -7,11 +7,10 @@ export interface Experience {
 	type: string
 	period: string
 	location: string
-	description: string
-	achievements: string[]
 	technologies: string[]
 	icon: LucideIcon
 	color: string
+	key: string
 }
 
 export interface TimelineItemProps {

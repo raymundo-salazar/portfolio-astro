@@ -3,6 +3,18 @@ import { EXPERIENCES } from "./constants"
 
 import TimelineItem from "@/components/molecules/TimelineItem/index.astro"
 import ShowMoreToggle from "@/components/molecules/ShowMoreToggle/index.astro"
+import { useTranslation } from "@/i18n"
+
+const currentLocale = Astro.params.lang || "es"
+const t = useTranslation(currentLocale as "es" | "en")
+
+const companiesCount = EXPERIENCES.map(exp => exp.company).filter(
+	(value, index, self) => self.indexOf(value) === index
+).length
+const leadershipRolesCount = EXPERIENCES.filter(
+	exp => exp.type.toLowerCase() === "leadership"
+).length
+const yearsOfExperience = new Date().getFullYear() - 2013
 ---
 
 <section
@@ -11,10 +23,12 @@ import ShowMoreToggle from "@/components/molecules/ShowMoreToggle/index.astro"
 >
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="text-center mb-16">
-			<h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">Experiencia Profesional</h2>
+			<h2 class="text-3xl sm:text-4xl font-bold text-white mb-4">
+				{t.timeline.title}
+			</h2>
 			<div class="w-24 h-1 bg-blue-600 mx-auto rounded-full mb-6"></div>
 			<p class="text-lg text-gray-300 max-w-2xl mx-auto">
-				Más de 12 años de trayectoria en desarrollo web, móvil y liderazgo técnico
+				{t.timeline.description.replaceAll("{{YEARS}}", yearsOfExperience.toString())}
 			</p>
 		</div>
 		<div class="relative">
@@ -38,20 +52,22 @@ import ShowMoreToggle from "@/components/molecules/ShowMoreToggle/index.astro"
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="grid grid-cols-2 md:grid-cols-4 gap-6">
 			<div class="text-center p-6 bg-neutral-700 rounded-xl shadow-md">
-				<div class="text-3xl font-bold text-blue-400 mb-2">12+</div>
-				<div class="text-sm text-gray-300">Años de Experiencia</div>
+				<div class="text-3xl font-bold text-blue-400 mb-2">
+					{yearsOfExperience}+
+				</div>
+				<div class="text-sm text-gray-300">{t.timeline.experienceYears}</div>
 			</div>
 			<div class="text-center p-6 bg-neutral-700 rounded-xl shadow-md">
-				<div class="text-3xl font-bold text-green-400 mb-2">11</div>
-				<div class="text-sm text-gray-300">Empresas</div>
+				<div class="text-3xl font-bold text-green-400 mb-2">{companiesCount}</div>
+				<div class="text-sm text-gray-300">{t.timeline.companies}</div>
 			</div>
 			<div class="text-center p-6 bg-neutral-700 rounded-xl shadow-md">
 				<div class="text-3xl font-bold text-purple-400 mb-2">10+</div>
-				<div class="text-sm text-gray-300">Apps en Producción</div>
+				<div class="text-sm text-gray-300">{t.timeline.productionApps}</div>
 			</div>
 			<div class="text-center p-6 bg-neutral-700 rounded-xl shadow-md">
-				<div class="text-3xl font-bold text-orange-400 mb-2">5</div>
-				<div class="text-sm text-gray-300">Roles de Liderazgo</div>
+				<div class="text-3xl font-bold text-orange-400 mb-2">{leadershipRolesCount}</div>
+				<div class="text-sm text-gray-300">{t.timeline.leadershipRoles}</div>
 			</div>
 		</div>
 	</div>

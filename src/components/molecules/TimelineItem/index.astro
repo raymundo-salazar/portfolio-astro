@@ -1,13 +1,19 @@
 ---
 import { Calendar } from "@lucide/astro"
+
+import { useTranslation } from "@/i18n"
+
 import { getTypeIcon, getTypeColor } from "./helpers"
 import type { TimelineItemProps } from "./types"
 
 const { exp, index } = Astro.props as TimelineItemProps
+const currentLocale = Astro.params.lang || "es"
 
 const Icon = exp.icon
 const TypeIcon = getTypeIcon(exp.type)
 const color = getTypeColor(exp.type)
+
+const t = useTranslation(currentLocale as "es" | "en")
 ---
 
 <div
@@ -40,7 +46,7 @@ const color = getTypeColor(exp.type)
 					class={`px-3 py-1 rounded-full text-xs font-medium flex items-center space-x-1 ${color}`}
 				>
 					<TypeIcon class="h-4 w-4" />
-					<span>{exp.type}</span>
+					<span>{t.timeline.types[exp.type as keyof typeof t.timeline.types]}</span>
 				</span>
 			</div>
 
@@ -53,14 +59,20 @@ const color = getTypeColor(exp.type)
 			</div>
 
 			{/* Description */}
-			<p class="text-gray-300 mb-4 leading-relaxed">{exp.description}</p>
+			<p class="text-gray-300 mb-4 leading-relaxed">
+				{t.timeline.experiences[exp.key as keyof typeof t.timeline.experiences].description}
+			</p>
 
 			{/* Achievements */}
 			<div class="mb-4">
-				<h4 class="text-sm font-semibold text-white mb-2">Logros principales:</h4>
+				<h4 class="text-sm font-semibold text-white mb-2">
+					{t.timeline.achievementsTitle}:
+				</h4>
 				<ul class="space-y-1">
 					{
-						exp.achievements.map(achievement => (
+						t.timeline.experiences[
+							exp.key as keyof typeof t.timeline.experiences
+						].achievements.map(achievement => (
 							<li class="text-sm text-gray-300 flex items-start">
 								<span class="w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 mr-2 shrink-0" />
 								{achievement}
