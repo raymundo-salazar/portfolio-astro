@@ -1,4 +1,7 @@
 export default {
+	generals: {
+		seeMore: "Ver más",
+	},
 	nav: {
 		home: "Inicio",
 		about: "Acerca de mí",
@@ -35,6 +38,17 @@ export default {
 				title: "CI/CD & DevOps",
 				description: "Pipelines automatizados, testing y deployment",
 			},
+		},
+	},
+	skills: {
+		title: "Habilidades Técnicas",
+		description: "Tecnologías y herramientas que domino para crear soluciones completas.",
+		categories: {
+			frontend: "Frontend",
+			backend: "Backend",
+			mobile: "Móvil",
+			design: "Diseño UI/UX",
+			devops: "DevOps",
 		},
 	},
 }

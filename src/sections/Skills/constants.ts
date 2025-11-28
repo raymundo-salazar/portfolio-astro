@@ -28,31 +28,31 @@ import type { SkillCategory } from "./types"
 
 export const SKILL_CATEGORIES: Record<string, SkillCategory> = {
 	frontend: {
-		title: "Frontend",
+		title: "frontend",
 		color: "bg-blue-900",
 		skilIconColor: "text-blue-700",
 		icon: Code,
 	},
 	backend: {
-		title: "Backend",
+		title: "backend",
 		color: "bg-emerald-900",
 		skilIconColor: "text-emerald-700",
 		icon: Database,
 	},
 	devops: {
-		title: "DevOps",
+		title: "devops",
 		color: "bg-orange-900",
 		skilIconColor: "text-orange-700",
 		icon: Zap,
 	},
 	design: {
-		title: "UI/UX & Design",
+		title: "design",
 		color: "bg-pink-900",
 		skilIconColor: "text-pink-700",
 		icon: Palette,
 	},
 	mobile: {
-		title: "Mobile",
+		title: "mobile",
 		color: "bg-cyan-900",
 		skilIconColor: "text-cyan-700",
 		icon: Smartphone,

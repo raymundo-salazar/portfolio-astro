@@ -1,8 +1,13 @@
 ---
 import { ChevronDown, ChevronUp } from "@lucide/astro"
+
+import { useTranslation } from "@/i18n"
+
 import type { ShowMoreToggleProps } from "./types"
 
 const { id } = Astro.props as ShowMoreToggleProps
+const currentLang = Astro.params.lang || "es"
+const t = useTranslation(currentLang as "es" | "en")
 ---
 
 <div
@@ -11,7 +16,7 @@ const { id } = Astro.props as ShowMoreToggleProps
 >
 	<ChevronUp class="w-6 h-6 hidden" />
 	<ChevronDown class="w-6 h-6" />
-	<span>Mostrar más</span>
+	<span>{t.generals.seeMore}</span>
 	<ChevronUp class="w-6 h-6 hidden" />
 	<ChevronDown class="w-6 h-6" />
 </div>
