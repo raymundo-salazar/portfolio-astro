@@ -1,0 +1,56 @@
+---
+import Analytics from "@vercel/analytics/astro"
+
+import Hero from "@/sections/Hero/index.astro"
+import Header from "@/sections/Header/index.astro"
+import About from "@/sections/About/index.astro"
+import Skills from "@/sections/Skills/index.astro"
+import Timeline from "@/sections/Timeline/index.astro"
+import Projects from "@/sections/Projects/index.astro"
+import Contact from "@/sections/Contact/index.astro"
+import Footer from "@/sections/Footer/index.astro"
+
+import "@/styles/global.css"
+
+export function getStaticPaths() {
+	return [{ params: { lang: "es" } }, { params: { lang: "en" } }]
+}
+
+export const defaultRedirect = "/es"
+
+const lang = Astro.params.lang
+---
+
+<html lang={lang}>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link
+			rel="icon"
+			href="/favicon.svg"
+			type="image/svg+xml"
+			media="(prefers-color-scheme: light)"
+		/>
+		<link
+			rel="icon"
+			href="/favicon-white.svg"
+			type="image/svg+xml"
+			media="(prefers-color-scheme: dark)"
+		/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Raymundo Salazar - Fullstack JS Developer & UI/UX Designer</title>
+		<Analytics />
+	</head>
+	<body class="bg-neutral-900">
+		<div class="min-h-screen">
+			<Header />
+			<Hero />
+			<About />
+			<Skills />
+			<Timeline />
+			<Projects />
+			<Contact />
+			<Footer />
+		</div>
+	</body>
+</html>
