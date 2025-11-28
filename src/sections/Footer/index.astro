@@ -4,8 +4,11 @@ import { ArrowUp } from "@lucide/astro"
 import { SOCIAL_LINKS } from "@/sections/Hero/constants"
 import FooterSocialLink from "@/components/molecules/FooterSocialLink/index.astro"
 import { NAV_ITEMS } from "@/sections/Header/constants"
+import { useTranslation } from "@/i18n"
 
+const currentLang = Astro.params.lang || "es"
 const currentYear = new Date().getFullYear()
+const t = useTranslation(currentLang as "es" | "en")
 ---
 
 <footer class="bg-neutral-800 text-white">
@@ -22,20 +25,17 @@ const currentYear = new Date().getFullYear()
 					<span class="text-xl font-bold">Raymundo Salazar</span>
 				</div>
 				<p class="text-gray-400 mb-6 leading-relaxed">
-					Lead UI/UX & Mobile Developer especializado en React, React Native y Node.js.
-					Creando experiencias digitales excepcionales con enfoque en liderazgo técnico y
-					arquitectura escalable.
+					{t.footer.description}
 				</p>
 				<p class="text-gray-400 mb-6 leading-relaxed">
-					Este sitio web fue construido con Astro, Tailwind CSS si te interesa ver el
-					código fuente, puedes encontrarlo en mi
+					{t.footer.sourceCode}
 					<a
 						href="https://github.com/raymundo-salazar/portfolio-astro"
 						target="_blank"
 						rel="noopener noreferrer"
 						class="text-blue-400 hover:underline"
 					>
-						repositorio de GitHub
+						{t.footer.githubRepo}
 					</a>.
 				</p>
 				<div class="flex space-x-4">
@@ -49,7 +49,7 @@ const currentYear = new Date().getFullYear()
 
 			{/* Quick Links */}
 			<div>
-				<h3 class="text-lg font-semibold mb-4">Enlaces Rápidos</h3>
+				<h3 class="text-lg font-semibold mb-4">{t.footer.quickLinks}</h3>
 				<ul class="space-y-3">
 					{
 						NAV_ITEMS.map(link => (
@@ -58,7 +58,7 @@ const currentYear = new Date().getFullYear()
 									data-section={link.id}
 									class="text-gray-400 hover:text-white transition-colors duration-200 block"
 								>
-									{link.label}
+									{[t.nav[link.id as keyof typeof t.nav]]}
 								</button>
 							</li>
 						))
@@ -68,7 +68,7 @@ const currentYear = new Date().getFullYear()
 
 			{/* Contact Info */}
 			<div>
-				<h3 class="text-lg font-semibold mb-4">Contacto</h3>
+				<h3 class="text-lg font-semibold mb-4">{t.footer.contactMe}</h3>
 				<div class="space-y-3 text-gray-400">
 					<p>
 						<a target="_blank" href="mailto:raymundo.salser@hotmail.com"

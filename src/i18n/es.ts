@@ -591,4 +591,13 @@ export default {
 			location: "Ubicación",
 		},
 	},
+	footer: {
+		description:
+			"Lead UI/UX & Mobile Developer especializado en React, React Native y Node.js. Creando experiencias digitales excepcionales con enfoque en liderazgo técnico y arquitectura escalable.",
+		sourceCode:
+			"Este sitio web fue construido con Astro, Tailwind CSS si te interesa ver el código fuente, puedes encontrarlo en mi ",
+		githubRepo: "repositorio de GitHub.",
+		quickLinks: "Enlaces Rápidos",
+		contactMe: "Contáctame",
+	},
 }
