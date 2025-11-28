@@ -3,6 +3,6 @@ export const NAV_ITEMS = [
 	{ id: "about", label: "Sobre mí" },
 	{ id: "skills", label: "Habilidades" },
 	{ id: "timeline", label: "Experiencia" },
-	// { id: "projects", label: "Proyectos" },
+	{ id: "projects", label: "Proyectos" },
 	{ id: "contact", label: "Contacto" },
 ]

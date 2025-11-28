@@ -1,16 +1,22 @@
 ---
-import { Menu } from "@lucide/astro"
+import { Globe, Menu } from "@lucide/astro"
+
+import { useTranslation } from "@/i18n"
+
 import { NAV_ITEMS } from "./constants"
+
+const currentLang = Astro.params.lang || "es"
+const t = useTranslation(currentLang as "es" | "en")
 ---
 
 <header id="header" class="fixed top-0 w-full z-50 transition-all duration-300 bg-transparent">
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="flex justify-between items-center py-4">
 			<div class="flex items-center space-x-2">
-				<img src="/logo/logo-icon-white.svg" alt="Raymundo Salazar" class="h-14" />
+				<img src="/logo/logo-icon-white.webp" alt="Raymundo Salazar" class="h-14" />
 				<span class="text-xl font-bold text-white">Raymundo Salazar</span>
 			</div>
-			<nav class="hidden md:flex space-x-8">
+			<nav class="hidden md:flex gap-6 items-center">
 				{
 					NAV_ITEMS.map(item => (
 						<button
@@ -18,10 +24,17 @@ import { NAV_ITEMS } from "./constants"
 							class={`text-sm font-medium transition-colors duration-200 hover:text-blue-600 text-gray-300`}
 							data-section={item.id}
 						>
-							{item.label}
+							{[t.nav[item.id as keyof typeof t.nav]]}
 						</button>
 					))
 				}
+				<a
+					href={currentLang === "es" ? "/en" : "/es"}
+					class={`flex text-sm font-medium transition-colors duration-200 hover:text-blue-600 text-gray-300 gap-2 items-center p-2 rounded-lg bg-neutral-700/50 hover:bg-neutral-700`}
+				>
+					<Globe size={14} />
+					{currentLang === "es" ? "English" : "Español"}
+				</a>
 			</nav>
 			<button
 				id="menu-toggle"
@@ -42,10 +55,17 @@ import { NAV_ITEMS } from "./constants"
 							class={`block w-full text-left px-4 py-3 text-base font-medium transition-colors hover:bg-neutral-800 hover:text-blue-400 text-gray-300`}
 							data-section={item.id}
 						>
-							{item.label}
+							{[t.nav[item.id as keyof typeof t.nav]]}
 						</button>
 					))
 				}
+				<button
+					type="button"
+					class={`flex w-full text-left px-4 py-3 text-base font-medium transition-colors hover:bg-neutral-800 hover:text-blue-400 text-gray-300 gap-2 item-center`}
+				>
+					<Globe />
+					{currentLang === "es" ? "English" : "Español"}
+				</button>
 			</nav>
 		</div>
 	</div>
