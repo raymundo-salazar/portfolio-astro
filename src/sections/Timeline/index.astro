@@ -19,7 +19,7 @@ const yearsOfExperience = new Date().getFullYear() - 2013
 
 <section
 	id="timeline"
-	class="py-20 bg-neutral-800 relative transition-all duration-300 overflow-hidden"
+	class="py-20 bg-neutral-800 relative transition-all duration-300 overflow-hidden max-h-screen"
 >
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="text-center mb-16">
@@ -45,10 +45,7 @@ const yearsOfExperience = new Date().getFullYear() - 2013
 
 	<ShowMoreToggle id="toggle-timeline" />
 </section>
-<section
-	id="timeline-summary"
-	class="py-20 bg-neutral-900 relative transition-all duration-300 overflow-hidden"
->
+<section id="timeline-summary" class="py-20 bg-neutral-900 relative transition-all duration-300">
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="grid grid-cols-2 md:grid-cols-4 gap-6">
 			<div class="text-center p-6 bg-neutral-700 rounded-xl shadow-md">
@@ -73,4 +70,4 @@ const yearsOfExperience = new Date().getFullYear() - 2013
 	</div>
 </section>
 
-<script src="./script.ts"></script>
+<script src="./scripts.ts"></script>

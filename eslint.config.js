@@ -87,4 +87,10 @@ export default [
 			},
 		},
 	},
+	{
+		files: ["**/*.{ts,tsx,astro}"],
+		rules: {
+			"@typescript-eslint/no-explicit-any": "off",
+		},
+	},
 ]

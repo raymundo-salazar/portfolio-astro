@@ -1,6 +1,7 @@
 export default {
 	generals: {
 		seeMore: "Ver más",
+		seeLess: "Ver menos",
 	},
 	nav: {
 		home: "Inicio",

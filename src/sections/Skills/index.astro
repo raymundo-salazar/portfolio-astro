@@ -10,7 +10,7 @@ const t = useTranslation(currentLang as "es" | "en")
 ---
 
 <section
-	class="py-20 bg-neutral-900 relative transition-all duration-300 overflow-hidden"
+	class="py-20 bg-neutral-900 relative transition-all duration-300 overflow-hidden max-h-screen"
 	id="skills"
 >
 	<div class="text-center mb-16">
@@ -60,64 +60,4 @@ const t = useTranslation(currentLang as "es" | "en")
 	<ShowMoreToggle id="toggle-skills" />
 </section>
 
-<script is:inline>
-	document.addEventListener("DOMContentLoaded", () => {
-		const pills = document.querySelectorAll(".category-pill")
-		const cards = document.querySelectorAll(".skill-card")
-		let activeCategory = null
-
-		pills.forEach(pill => {
-			pill.addEventListener("click", () => {
-				const category = pill.dataset.category
-
-				if (activeCategory === category) {
-					// Si haces clic en la misma categoría, se desactiva el filtro
-					activeCategory = null
-					pills.forEach(p => p.classList.remove("ring-2", "ring-white", "opacity-100"))
-					cards.forEach(card => (card.style.display = ""))
-				} else {
-					// Activar nueva categoría
-					activeCategory = category
-					pills.forEach(p => {
-						if (p.dataset.category === category) {
-							p.classList.add("ring-2", "ring-white", "opacity-100")
-						} else {
-							p.classList.remove("ring-2", "ring-white")
-							p.classList.add("opacity-40")
-						}
-					})
-
-					cards.forEach(card => {
-						card.style.display = card.dataset.category === category ? "" : "none"
-					})
-				}
-			})
-		})
-
-		const container = document.getElementById("skills")
-		const toggleBtn = document.getElementById("toggle-skills")
-		const chevronUp = toggleBtn.querySelectorAll(".lucide-chevron-up")
-		const chevronDown = toggleBtn.querySelectorAll(".lucide-chevron-down")
-		const maxHeight = container.scrollHeight > 800 ? "800px" : container.scrollHeight + "px"
-		let expanded = false
-
-		container.style.maxHeight = maxHeight
-
-		toggleBtn.addEventListener("click", () => {
-			expanded = !expanded
-
-			if (expanded) {
-				container.style.maxHeight = container.scrollHeight + "px"
-				toggleBtn.querySelector("span").textContent = "Mostrar menos"
-				chevronUp.forEach(chevron => chevron.classList.remove("hidden"))
-				chevronDown.forEach(chevron => chevron.classList.add("hidden"))
-			} else {
-				container.style.maxHeight = "800px"
-				toggleBtn.querySelector("span").textContent = "Mostrar más"
-				container.scrollIntoView({ behavior: "smooth", block: "center" })
-				chevronUp.forEach(chevron => chevron.classList.add("hidden"))
-				chevronDown.forEach(chevron => chevron.classList.remove("hidden"))
-			}
-		})
-	})
-</script>
+<script src="./scripts.ts"></script>
