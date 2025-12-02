@@ -7,8 +7,7 @@ import { useTranslation } from "@/i18n"
 
 import type { ProjectItemProps } from "./types"
 
-const { images, liveUrl, githubUrl, appleUrl, androidUrl, technologies, key } =
-	Astro.props as ProjectItemProps
+const { images, liveUrl, githubUrl, appleUrl, androidUrl, technologies, key } = Astro.props as ProjectItemProps
 const currentLang = Astro.params.lang || "es"
 const t = useTranslation(currentLang as "es" | "en")
 const projectData = t.projects.list[key as keyof typeof t.projects.list]
@@ -26,6 +25,9 @@ const projectData = t.projects.list[key as keyof typeof t.projects.list]
 					src={images[0]}
 					alt={projectData.title}
 					class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+					loading="lazy"
+					decoding="async"
+					fetchpriority="auto"
 				/>
 				<div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-start justify-end opacity-0 group-hover:opacity-100 p-3">
 					<div class="flex space-x-4">

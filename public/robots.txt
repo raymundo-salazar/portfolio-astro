@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Evita que los PDFs se dupliquen en buscadores
+Disallow: /curriculum-vitae/*.pdf
+
+# Indica a Google y demás crawlers dónde está tu sitemap
+Sitemap: https://raymundosalazar.dev/sitemap.xml

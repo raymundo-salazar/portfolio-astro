@@ -1,5 +1,5 @@
 ---
-import Analytics from "@vercel/analytics/astro"
+import Layout from "@/layouts/index.astro"
 
 import Hero from "@/sections/Hero/index.astro"
 import Header from "@/sections/Header/index.astro"
@@ -11,58 +11,22 @@ import Contact from "@/sections/Contact/index.astro"
 import Footer from "@/sections/Footer/index.astro"
 
 import "@/styles/global.css"
-import { languages, useTranslation } from "@/i18n"
+import { languages } from "@/i18n"
 
 export function getStaticPaths() {
 	return Object.keys(languages).map(lang => ({
 		params: { lang },
 	}))
 }
-
-export const defaultRedirect = "/es"
-
-const lang = Astro.params.lang
-const t = useTranslation(lang as "es" | "en")
 ---
 
-<html lang={lang}>
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link
-			rel="icon"
-			href="/favicon.svg"
-			type="image/svg+xml"
-			media="(prefers-color-scheme: light)"
-		/>
-		<link
-			rel="icon"
-			href="/favicon-white.svg"
-			type="image/svg+xml"
-			media="(prefers-color-scheme: dark)"
-		/>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>{t.generals.title}</title>
-		<meta name="description" content={t.hero.text} />
-		<meta name="author" content="Raymundo Salazar" />
-		<meta
-			name="keywords"
-			content="Raymundo Salazar, portfolio, developer, fullstack, javascript, ui/ux, designer"
-		/>
-		<meta name="robots" content="index, follow" />
-		<meta name="language" content={lang} />
-		<Analytics />
-	</head>
-	<body class="bg-neutral-900">
-		<div class="min-h-screen">
-			<Header />
-			<Hero />
-			<About />
-			<Skills />
-			<Timeline />
-			<Projects />
-			<Contact />
-			<Footer />
-		</div>
-	</body>
-</html>
+<Layout>
+	<Header />
+	<Hero />
+	<About />
+	<Skills />
+	<Timeline />
+	<Projects />
+	<Contact />
+	<Footer />
+</Layout>
