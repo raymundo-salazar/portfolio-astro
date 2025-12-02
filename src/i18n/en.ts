@@ -4,6 +4,11 @@ export default {
 		seeLess: "See Less",
 		title: "Raymundo Salazar - Fullstack JS Developer & UI/UX Designer",
 	},
+	notFound: {
+		title: "Page Not Found",
+		text: "Sorry, the page you are looking for does not exist or has been moved. But don't worry, you can find what you need from my homepage.",
+		goHome: "Go to Home",
+	},
 	nav: {
 		home: "Home",
 		about: "About Me",

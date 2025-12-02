@@ -4,7 +4,8 @@ import { Globe, Menu } from "@lucide/astro"
 import { useTranslation } from "@/i18n"
 import { NAV_ITEMS } from "./constants"
 
-const currentLang = Astro.params.lang || "es"
+const propsLang = Astro.props.lang
+const currentLang = propsLang || Astro.params.lang || "es"
 const t = useTranslation(currentLang as "es" | "en")
 ---
 
@@ -13,7 +14,7 @@ const t = useTranslation(currentLang as "es" | "en")
 		<div class="flex justify-between items-center py-4">
 			<div class="flex items-center space-x-2">
 				<img src="/logo/logo-icon-white.webp" alt="Raymundo Salazar" class="h-14" />
-				<span class="text-xl font-bold text-white">Raymundo Salazar</span>
+				<h1 class="text-xl font-bold text-white">Raymundo Salazar</h1>
 			</div>
 			<nav class="hidden md:flex gap-6 items-center">
 				{

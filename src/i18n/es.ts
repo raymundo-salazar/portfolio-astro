@@ -4,6 +4,11 @@ export default {
 		seeLess: "Ver menos",
 		title: "Raymundo Salazar - Desarrollador Fullstack JS & Diseñador UI/UX",
 	},
+	notFound: {
+		title: "Página no encontrada",
+		text: "Lo siento, la página que buscas no existe o ha sido movida. Pero no te preocupes, puedes encontrar lo que necesitas desde mi página principal.",
+		goHome: "Ir al Inicio",
+	},
 	nav: {
 		home: "Inicio",
 		about: "Acerca de mí",
