@@ -11,6 +11,7 @@ export default {
 		timeline: "Experience",
 		projects: "Projects",
 		contact: "Contact",
+		openMenu: "Open Menu",
 	},
 	hero: {
 		text: "Fullstack JS Developer & UI/UX Designer with over {{YEARS}} years of experience in web and mobile development. Specialized in technical leadership, TypeScript, React, React Native, and Node.js.",
@@ -235,6 +236,7 @@ export default {
 			seeOnPlayStore: "See on Play Store",
 			seeOnAppStore: "See on App Store",
 			liveSite: "See Live Site",
+			closeModal: "Close Modal",
 		},
 		list: {
 			vittiVsta: {

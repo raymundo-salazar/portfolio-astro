@@ -7,7 +7,8 @@ import { useTranslation } from "@/i18n"
 
 import type { ProjectItemProps } from "./types"
 
-const { images, liveUrl, githubUrl, appleUrl, androidUrl, technologies, key } = Astro.props as ProjectItemProps
+const { images, liveUrl, githubUrl, appleUrl, androidUrl, technologies, key } =
+	Astro.props as ProjectItemProps
 const currentLang = Astro.params.lang || "es"
 const t = useTranslation(currentLang as "es" | "en")
 const projectData = t.projects.list[key as keyof typeof t.projects.list]
@@ -31,9 +32,13 @@ const projectData = t.projects.list[key as keyof typeof t.projects.list]
 				/>
 				<div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-start justify-end opacity-0 group-hover:opacity-100 p-3">
 					<div class="flex space-x-4">
-						<a class="p-3 bg-neutral-800 rounded-full hover:bg-blue-600 hover:text-white transition-colors text-white">
+						<button
+							type="button"
+							class="p-3 bg-neutral-800 rounded-full hover:bg-blue-600 hover:text-white transition-colors text-white"
+							aria-label={t.projects.seeDetails}
+						>
 							<Eye class="h-5 w-5" />
-						</a>
+						</button>
 					</div>
 				</div>
 			</div>
@@ -71,6 +76,7 @@ const projectData = t.projects.list[key as keyof typeof t.projects.list]
 							href={appleUrl}
 							class="p-3 rounded-full transition-colors text-white hover:text-blue-400"
 							target="_blank"
+							aria-label={t.projects.modal.seeOnAppStore}
 						>
 							<SiApple className="h-5 w-5" />
 						</a>
@@ -82,6 +88,7 @@ const projectData = t.projects.list[key as keyof typeof t.projects.list]
 							href={androidUrl}
 							class="p-3 rounded-full transition-colors text-white hover:text-blue-400"
 							target="_blank"
+							aria-label={t.projects.modal.seeOnPlayStore}
 						>
 							<SiAndroid className="h-5 w-5" />
 						</a>
@@ -93,6 +100,7 @@ const projectData = t.projects.list[key as keyof typeof t.projects.list]
 							href={liveUrl}
 							class="p-3 rounded-full transition-colors text-white hover:text-blue-400"
 							target="_blank"
+							aria-label={t.projects.modal.liveSite}
 						>
 							<ExternalLink class="h-5 w-5" />
 						</a>
@@ -104,6 +112,7 @@ const projectData = t.projects.list[key as keyof typeof t.projects.list]
 							href={githubUrl}
 							class="p-3 rounded-full transition-colors text-white hover:text-blue-400"
 							target="_blank"
+							aria-label={t.projects.modal.sourceCode}
 						>
 							<SiGithub className="h-5 w-5" />
 						</a>

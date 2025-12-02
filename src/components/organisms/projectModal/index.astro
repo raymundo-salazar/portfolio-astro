@@ -18,6 +18,7 @@ const projectData = t.projects.list[project.key as keyof typeof t.projects.list]
 	<!-- Backdrop -->
 	<div
 		class="absolute inset-0 bg-black/60 backdrop-blur-sm top-0 left-0 w-screen h-screen close-modal backdrop opacity-0 transition-opacity duration-300"
+		aria-label={t.projects.modal.closeModal}
 	>
 	</div>
 
@@ -50,6 +51,7 @@ const projectData = t.projects.list[project.key as keyof typeof t.projects.list]
 							<img
 								src={project.images[0]}
 								class="w-full h-full object-cover transition duration-300"
+								alt={projectData.title}
 							/>
 						</div>
 

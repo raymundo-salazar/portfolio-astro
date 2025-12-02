@@ -38,6 +38,7 @@ const t = useTranslation(currentLang as "es" | "en")
 			<button
 				id="menu-toggle"
 				class="md:hidden p-2 rounded-lg hover:bg-neutral-800 transition-colors text-white"
+				aria-label={t.nav.openMenu}
 			>
 				<Menu class="h-6 w-6" />
 			</button>
