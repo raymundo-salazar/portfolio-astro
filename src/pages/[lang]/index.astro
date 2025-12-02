@@ -11,16 +11,17 @@ import Contact from "@/sections/Contact/index.astro"
 import Footer from "@/sections/Footer/index.astro"
 
 import "@/styles/global.css"
-import { useTranslation } from "@/i18n"
+import { languages, useTranslation } from "@/i18n"
 
 export function getStaticPaths() {
-	return [{ params: { lang: "es" } }, { params: { lang: "en" } }]
+	return Object.keys(languages).map(lang => ({
+		params: { lang },
+	}))
 }
 
 export const defaultRedirect = "/es"
 
 const lang = Astro.params.lang
-
 const t = useTranslation(lang as "es" | "en")
 ---
 

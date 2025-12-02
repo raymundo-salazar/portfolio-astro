@@ -53,3 +53,14 @@ const t = useTranslation(lang as "es" | "en")
 		</div>
 	</body>
 </html>
+<script is:inline>
+	;(function () {
+		const browserLang = navigator.language || navigator.userLanguage
+		let lang = browserLang.toLowerCase().startsWith("es") ? "es" : "en"
+
+		const currentPath = window.location.pathname.split("/")[1]
+		if (currentPath === "es" || currentPath === "en") return
+
+		window.location.replace(`/${lang}`)
+	})()
+</script>
