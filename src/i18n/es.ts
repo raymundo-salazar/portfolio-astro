@@ -2,7 +2,11 @@ export default {
 	generals: {
 		seeMore: "Ver más",
 		seeLess: "Ver menos",
-		title: "Raymundo Salazar - Desarrollador Fullstack JS & Diseñador UI/UX",
+		title: "Raymundo Salazar - Fullstack JS Developer & UI/UX Designer en Monterrey - Desarrollo Web Profesional",
+		description:
+			"Soy Raymundo Salazar, Fullstack JavaScript Developer y UI/UX Designer. Construyo sitios y aplicaciones web modernas, rápidas y escalables con React, TypeScript y diseño centrado en el usuario. Disponible para proyectos especiales, startups y empresas. Contrátame para tu próximo desarrollo web.",
+		keywords:
+			"fullstack developer,desarrollador fullstack javascript,diseñador ui/ux,desarrollador web en monterrey,programador web freelance,desarrollador web freelance,desarrollador react,desarrollador javascript,diseñador ux,diseñador de interfaces,desarrollador para proyectos especiales,contratar desarrollador web,programador para startups,desarrollador de aplicaciones web,contratar desarrollador fullstack,contratar programador web,contratar diseñador ui/ux,contratar desarrollador javascript,contratar desarrollador react,necesito un desarrollador web,necesito un programador javascript,desarrollador web para proyectos especiales,desarrollador para proyecto freelance,desarrollador web de confianza,desarrollador web profesional,react developer,typescript developer,nextjs developer,nodejs developer,express developer,tailwind developer,fullstack javascript developer,desarrollo web con react,desarrollo web con nextjs,desarrollador web monterrey,programador web monterrey,diseñador ui/ux monterrey,desarrollador freelance monterrey,fullstack developer monterrey,programador javascript monterrey,diseñador de interfaces monterrey,desarrollo de sitios web,diseño de interfaces web,diseño ux para aplicaciones,creación de landing pages,desarrollo de aplicaciones web,optimización web,diseño de experiencia de usuario,prototipado ui/ux,desarrollo frontend,desarrollo backend,diseño de dashboards,integración APIs",
 	},
 	notFound: {
 		title: "Página no encontrada",

@@ -2,7 +2,11 @@ export default {
 	generals: {
 		seeMore: "See More",
 		seeLess: "See Less",
-		title: "Raymundo Salazar - Fullstack JS Developer & UI/UX Designer",
+		title: "Raymundo Salazar - Fullstack JS Developer & UI/UX Designer - Modern Web Development",
+		description:
+			"I'm Raymundo Salazar, a Fullstack JavaScript Developer & UI/UX Designer. I build modern, fast and scalable websites and web applications using React, TypeScript and user-centered design. Available for custom projects, startups and companies. Hire me for your next web project.",
+		keywords:
+			"fullstack js developer,fullstack javascript developer,ui/ux designer,web developer,freelance web developer,react developer,typescript developer,frontend developer,backend developer,web app developer,hire a fullstack developer,hire a javascript developer,hire a react developer,hire a ui/ux designer,hire a web developer for a project,looking for a web developer,need a javascript developer,need a fullstack developer,web developer for custom projects,freelance developer for hire,contract web developer,react developer for hire,nextjs developer,nodejs developer,typescript web developer,javascript engineer,web designer and developer,website development,web app development,ui design,ux design,landing page design,product design,dashboard design,custom web development,prototyping and ui/ux,interface design,fullstack developer in Mexico,web developer in Monterrey,freelance developer Mexico",
 	},
 	notFound: {
 		title: "Page Not Found",

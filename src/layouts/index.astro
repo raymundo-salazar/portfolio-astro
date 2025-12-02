@@ -27,31 +27,16 @@ const t = useTranslation(lang as "es" | "en")
 		/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>{t.generals.title}</title>
-		<meta
-			name="description"
-			content={t.hero.text.replaceAll(
-				"{{YEARS}}",
-				(new Date().getFullYear() - 2013).toString()
-			)}
-		/>
+		<meta name="description" content={t.generals.description} />
 		<meta name="author" content="Raymundo Salazar" />
-		<meta
-			name="keywords"
-			content="Raymundo Salazar, portfolio, developer, fullstack, javascript, ui/ux, designer"
-		/>
+		<meta name="keywords" content={t.generals.keywords} />
 		<meta name="robots" content="index, follow" />
 		<meta name="language" content={lang} />
 		<link rel="alternate" href="https://raymundosalazar.dev/es" hreflang="es" />
 		<link rel="alternate" href="https://raymundosalazar.dev/en" hreflang="en" />
 		<link rel="alternate" href="https://raymundosalazar.dev" hreflang="x-default" />
 		<meta name="og:title" content={t.generals.title} />
-		<meta
-			name="og:description"
-			content={t.hero.text.replaceAll(
-				"{{YEARS}}",
-				(new Date().getFullYear() - 2013).toString()
-			)}
-		/>
+		<meta name="og:description" content={t.generals.description} />
 		<meta name="og:type" content="website" />
 		<meta name="og:url" content="https://raymundosalazar.dev/" />
 		<meta name="og:image" content="/og-image.webp" />
