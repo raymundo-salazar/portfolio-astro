@@ -3,7 +3,7 @@ import { useTranslation } from "@/i18n"
 
 import type { HeroSocialIconProps } from "./types"
 
-const { url, icon: Icon, name, title } = Astro.props as HeroSocialIconProps
+const { url, icon: Icon, name, title, loading } = Astro.props as HeroSocialIconProps
 
 const currentLang = Astro.params.lang || "es"
 const t = useTranslation(currentLang as "es" | "en")
@@ -11,11 +11,13 @@ const t = useTranslation(currentLang as "es" | "en")
 
 <a
 	href={url.replaceAll("{{LANG}}", currentLang.toUpperCase())}
-	class="p-3 bg-neutral-800 rounded-full shadow-md hover:shadow-lg transition-all duration-300 text-gray-300 hover:text-blue-400 cursor-pointer flex gap-2"
+	class={`p-3 bg-neutral-800 rounded-full shadow-md hover:shadow-lg transition-all duration-300 text-gray-300 hover:text-blue-400 cursor-pointer flex gap-2 ${loading ? "animate-pulse items-center" : ""}`}
 	target="_blank"
 	rel="noopener noreferrer"
 	title={name}
 >
-	<Icon className="h-6 w-6" />
-	{title && <span>{t.hero[title as keyof typeof t.hero]}</span>}
+	{!loading && <Icon className="h-6 w-6" />}
+	{loading && <span class="w-6 h-6 bg-neutral-700 rounded-full" />}
+	{title && !loading && <span>{t.hero[title as keyof typeof t.hero]}</span>}
+	{title && loading && <span class="w-25 h-4 bg-neutral-700 rounded-full" />}
 </a>

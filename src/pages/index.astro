@@ -1,0 +1,55 @@
+---
+import Analytics from "@vercel/analytics/astro"
+
+import HeroSkeleton from "@/sections/HeroSkeleton/index.astro"
+import HeaderSkeleton from "@/sections/HeaderSkeleton/index.astro"
+
+import "@/styles/global.css"
+import { useTranslation } from "@/i18n"
+
+export function getStaticPaths() {
+	return [{ params: { lang: "es" } }, { params: { lang: "en" } }]
+}
+
+export const defaultRedirect = "/es"
+
+const lang = Astro.params.lang
+
+const t = useTranslation(lang as "es" | "en")
+---
+
+<html lang={lang}>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link
+			rel="icon"
+			href="/favicon.svg"
+			type="image/svg+xml"
+			media="(prefers-color-scheme: light)"
+		/>
+		<link
+			rel="icon"
+			href="/favicon-white.svg"
+			type="image/svg+xml"
+			media="(prefers-color-scheme: dark)"
+		/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{t.generals.title}</title>
+		<meta name="description" content={t.hero.text} />
+		<meta name="author" content="Raymundo Salazar" />
+		<meta
+			name="keywords"
+			content="Raymundo Salazar, portfolio, developer, fullstack, javascript, ui/ux, designer"
+		/>
+		<meta name="robots" content="index, follow" />
+		<meta name="language" content={lang} />
+		<Analytics />
+	</head>
+	<body class="bg-neutral-900">
+		<div class="min-h-screen">
+			<HeaderSkeleton />
+			<HeroSkeleton />
+		</div>
+	</body>
+</html>

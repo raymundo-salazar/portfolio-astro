@@ -1,0 +1,136 @@
+---
+import { Globe, Menu } from "@lucide/astro"
+
+import { useTranslation } from "@/i18n"
+import { NAV_ITEMS } from "./constants"
+
+const currentLang = Astro.params.lang || "es"
+const t = useTranslation(currentLang as "es" | "en")
+---
+
+<header id="header" class="fixed top-0 w-full z-50 transition-all duration-300 bg-transparent">
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<div class="flex justify-between items-center py-4">
+			<div class="flex items-center space-x-2">
+				<img src="/logo/logo-icon-white.webp" alt="Raymundo Salazar" class="h-14" />
+				<span class="text-xl font-bold text-white">Raymundo Salazar</span>
+			</div>
+			<nav class="hidden md:flex gap-6 items-center">
+				{
+					NAV_ITEMS.map(item => (
+						<button
+							type="button"
+							class={`text-sm font-medium transition-colors duration-200 hover:text-blue-600 text-gray-300`}
+							data-section={item.id}
+						>
+							{[t.nav[item.id as keyof typeof t.nav]]}
+						</button>
+					))
+				}
+				<a
+					href={currentLang === "es" ? "/en" : "/es"}
+					class={`flex text-sm font-medium transition-colors duration-200 hover:text-blue-600 text-gray-300 gap-2 items-center p-2 rounded-lg bg-neutral-700/50 hover:bg-neutral-700`}
+				>
+					<Globe size={14} />
+					{currentLang === "es" ? "English" : "Español"}
+				</a>
+			</nav>
+			<button
+				id="menu-toggle"
+				class="md:hidden p-2 rounded-lg hover:bg-neutral-800 transition-colors text-white"
+			>
+				<Menu class="h-6 w-6" />
+			</button>
+		</div>
+		<div
+			id="mobile-menu"
+			class="hidden md:hidden bg-neutral-900 border-t border-gray-700 shadow-lg"
+		>
+			<nav class="py-4">
+				{
+					NAV_ITEMS.map(item => (
+						<button
+							type="button"
+							class={`block w-full text-left px-4 py-3 text-base font-medium transition-colors hover:bg-neutral-800 hover:text-blue-400 text-gray-300`}
+							data-section={item.id}
+						>
+							{[t.nav[item.id as keyof typeof t.nav]]}
+						</button>
+					))
+				}
+				<button
+					type="button"
+					class={`flex w-full text-left px-4 py-3 text-base font-medium transition-colors hover:bg-neutral-800 hover:text-blue-400 text-gray-300 gap-2 item-center`}
+				>
+					<Globe />
+					{currentLang === "es" ? "English" : "Español"}
+				</button>
+			</nav>
+		</div>
+	</div>
+</header>
+
+<script is:inline>
+	const header = document.getElementById("header")
+	const menuToggle = document.getElementById("menu-toggle")
+	const mobileMenu = document.getElementById("mobile-menu")
+	const navButtons = document.querySelectorAll("[data-section]")
+
+	let isMenuOpen = false
+
+	menuToggle?.addEventListener("click", () => {
+		isMenuOpen = !isMenuOpen
+		mobileMenu?.classList.toggle("hidden", !isMenuOpen)
+		menuToggle.innerHTML = isMenuOpen
+			? '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>'
+			: '<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7"/></svg>'
+	})
+
+	navButtons.forEach(btn => {
+		btn.addEventListener("click", () => {
+			const id = btn.getAttribute("data-section")
+			const target = document.getElementById(id)
+			if (target) target.scrollIntoView({ behavior: "smooth" })
+			if (isMenuOpen) {
+				mobileMenu?.classList.add("hidden")
+				isMenuOpen = false
+			}
+		})
+	})
+
+	const sections = new Set()
+	navButtons.forEach(btn => {
+		const id = btn.getAttribute("data-section")
+		if (id) sections.add(id)
+	})
+
+	window.addEventListener("scroll", () => {
+		const scrollY = window.scrollY
+
+		if (scrollY > 50) {
+			header?.classList.add("bg-neutral-900/95", "backdrop-blur-sm", "shadow-lg")
+			header?.classList.remove("bg-transparent")
+		} else {
+			header?.classList.remove("bg-neutral-900/95", "backdrop-blur-sm", "shadow-lg")
+			header?.classList.add("bg-transparent")
+		}
+
+		for (const sectionId of sections) {
+			const section = document.getElementById(sectionId)
+			const link = document.querySelector(`[data-section="${sectionId}"]`)
+
+			if (!section || !link) continue
+
+			const top = section.offsetTop
+			const height = section.offsetHeight
+
+			if (scrollY >= top && scrollY < top + height) {
+				link.classList.add("text-blue-400")
+				link.classList.remove("text-gray-300")
+			} else {
+				link.classList.remove("text-blue-400")
+				link.classList.add("text-gray-300")
+			}
+		}
+	})
+</script>

@@ -6,4 +6,5 @@ export interface HeroSocialIconProps {
 	url: string
 	title?: string
 	icon: IconType | AstroComponent
+	loading?: boolean
 }

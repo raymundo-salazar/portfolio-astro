@@ -1,0 +1,80 @@
+---
+import HeroSocialIcon from "@/components/molecules/HeroSocialIcon/index.astro"
+import { SOCIAL_LINKS } from "./constants"
+---
+
+<section
+	id="home"
+	class="min-h-screen flex items-center justify-center bg-linear-to-br from-neutral-900 via-neutral-800 to-neutral-900 pt-20"
+>
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+		<div class="animate-fade-in-up">
+			<img
+				src="/logo/logo-white.webp"
+				alt="Raymundo Salazar"
+				width="500"
+				height="330.66"
+				fetchpriority="high"
+				loading="eager"
+				class="w-full object-cover mx-auto rounded-xl mb-10 max-w-[500px]"
+			/>
+
+			<div
+				class="mb-8 w-full max-w-3xl mx-auto leading-relaxed flex flex-col items-center gap-4"
+			>
+				<span class="block w-11/13 h-6 bg-neutral-600 animate-pulse rounded-full"></span>
+				<span class="block w-full h-6 bg-neutral-600 animate-pulse rounded-full"></span>
+				<span class="block w-7/12 h-6 bg-neutral-600 animate-pulse rounded-full"></span>
+			</div>
+
+			<div
+				class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 mb-12"
+			>
+				<button
+					id="scroll-button"
+					class="group bg-blue-600 text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 transform shadow-lg flex items-center gap-2 animate-pulse"
+				>
+					<span class="block w-35 h-4 bg-white/50 rounded-full"></span>
+					<span class="block w-5 h-5 bg-white/50 rounded-full"></span>
+				</button>
+
+				<div class="flex space-x-4">
+					{
+						SOCIAL_LINKS.map(({ url, icon, name, title }) => (
+							<HeroSocialIcon
+								url={url}
+								icon={icon}
+								name={name}
+								title={title}
+								loading
+							/>
+						))
+					}
+				</div>
+			</div>
+
+			{/* Floating elements for visual interest */}
+			<div
+				class="absolute top-20 left-10 w-20 h-20 opacity-10 animate-float bg-neutral-600 rounded-full"
+			>
+			</div>
+			<div
+				class="absolute top-40 right-20 w-16 h-16 opacity-15 animate-float-delayed bg-blue-900 rounded-full"
+			>
+			</div>
+			<div
+				class="absolute bottom-20 left-1/4 w-12 h-12 opacity-20 animate-float bg-blue-800 rounded-full"
+			>
+			</div>
+		</div>
+	</div>
+</section>
+<script is:inline>
+	document.addEventListener("DOMContentLoaded", () => {
+		const button = document.getElementById("scroll-button")
+		button?.addEventListener("click", () => {
+			const element = document.getElementById("about")
+			if (element) element.scrollIntoView({ behavior: "smooth" })
+		})
+	})
+</script>
