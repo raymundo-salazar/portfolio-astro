@@ -1,0 +1,31 @@
+# LLM guidelines for raymundosalazar.dev
+
+# OpenAI
+User-Agent: GPTBot
+Allow: /
+
+# Google AI
+User-Agent: Google-Extended
+Allow: /
+
+# Anthropic (Claude)
+User-Agent: ClaudeBot
+Allow: /
+
+# Meta AI
+User-Agent: MetaAI
+Allow: /
+
+# Common scrapers you probably don't want
+User-Agent: CCBot
+Disallow: /
+
+User-Agent: AI2Bot
+Disallow: /
+
+User-Agent: Omgilibot
+Disallow: /
+
+# Default rules
+User-Agent: *
+Allow: /
