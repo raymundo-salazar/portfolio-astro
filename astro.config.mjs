@@ -19,4 +19,10 @@ export default defineConfig({
 	vite: {
 		plugins: [tailwindcss()],
 	},
+
+	redirects: {
+		"/whatsapp": "https://wa.me/528186843534",
+		"/linkedin": "https://www.linkedin.com/in/raymundosalazar/",
+		"/github": "https://github.com/raymundo-salazar"
+	}
 })
