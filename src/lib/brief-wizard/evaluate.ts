@@ -19,7 +19,7 @@ const isEmptyValue = (value: FieldValue) => {
 	if (typeof value === "number") return Number.isNaN(value)
 	if (typeof value === "boolean") return false
 	if (Array.isArray(value)) return value.length === 0
-	if (value instanceof FileList) return value.length === 0
+	if (typeof FileList !== "undefined" && value instanceof FileList) return value.length === 0
 	if (value instanceof File) return false
 	if (typeof value === "object") {
 		if ("html" in value && "text" in value) {
@@ -35,7 +35,7 @@ const isEmptyValue = (value: FieldValue) => {
 const toComparable = (value: FieldValue) => {
 	if (value == null) return value
 	if (Array.isArray(value)) return value
-	if (value instanceof FileList) return Array.from(value)
+	if (typeof FileList !== "undefined" && value instanceof FileList) return Array.from(value)
 	if (value instanceof File) return value
 	if (typeof value === "object" && "text" in value) return value.text
 	return value
@@ -161,7 +161,7 @@ export const getFieldValueText = (value: FieldValue) => {
 	if (typeof value === "number") return String(value)
 	if (typeof value === "boolean") return value ? "Sí" : "No"
 	if (Array.isArray(value)) return value.map(item => String(item)).join(", ")
-	if (value instanceof FileList) {
+	if (typeof FileList !== "undefined" && value instanceof FileList) {
 		return Array.from(value)
 			.map(file => file.name)
 			.join(", ")
@@ -178,7 +178,7 @@ const passesValidationCondition = (rule: ValidationRule, answers: WizardAnswerMa
 	!("when" in rule) || evaluateVisibilityCondition(rule.when, answers)
 
 export const getFileCount = (value: FieldValue) => {
-	if (value instanceof FileList) return value.length
+	if (typeof FileList !== "undefined" && value instanceof FileList) return value.length
 	if (Array.isArray(value) && value.every(item => item instanceof File)) return value.length
 	if (value instanceof File) return 1
 	return 0
@@ -186,7 +186,7 @@ export const getFileCount = (value: FieldValue) => {
 
 const getLargestSizeMb = (value: FieldValue) => {
 	const files =
-		value instanceof FileList
+		typeof FileList !== "undefined" && value instanceof FileList
 			? Array.from(value)
 			: Array.isArray(value) && value.every(item => item instanceof File)
 				? value
@@ -271,10 +271,20 @@ export const evaluateValidation = (
 					if (getLargestSizeMb(value) > rule.value) errors.push(rule.message)
 					break
 				case "min":
-					if (Number(value) < rule.value) errors.push(rule.message)
+					{
+						const numericValue = Number(value)
+						if (Number.isNaN(numericValue) || numericValue < rule.value) {
+							errors.push(rule.message)
+						}
+					}
 					break
 				case "max":
-					if (Number(value) > rule.value) errors.push(rule.message)
+					{
+						const numericValue = Number(value)
+						if (Number.isNaN(numericValue) || numericValue > rule.value) {
+							errors.push(rule.message)
+						}
+					}
 					break
 				case "custom": {
 					const customError = runCustomValidation(
@@ -286,7 +296,7 @@ export const evaluateValidation = (
 					)
 					if (customError) {
 						errors.push(customError)
-					} else if (rule.message) {
+					} else if (!customValidators[rule.name] && rule.message) {
 						errors.push(rule.message)
 					}
 					break

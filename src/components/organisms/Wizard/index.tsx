@@ -31,7 +31,7 @@ import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiStar } from "react-icons/fi
 
 import StepSlide from "./StepSlide"
 
-type Props = {
+export type WizardProps = {
 	config: WizardConfig
 	initialAnswers?: WizardAnswerMap
 	onComplete?: (answers: WizardAnswerMap) => void | Promise<void>
@@ -81,7 +81,7 @@ const themeFallback = {
 const mergeTheme = (theme?: WizardConfig["theme"]) => ({ ...themeFallback, ...theme })
 
 const isFilesValue = (value: FieldValue): value is File[] | FileList =>
-	Array.isArray(value) || value instanceof FileList
+	Array.isArray(value) || (typeof FileList !== "undefined" && value instanceof FileList)
 
 const renderQuestion = (
 	question: WizardQuestion,
@@ -181,7 +181,7 @@ export default function Wizard({
 	onStepChange,
 	customValidators = {},
 	className,
-}: Props) {
+}: WizardProps) {
 	const normalizedConfig = useMemo(() => normalizeWizardConfig(config), [config])
 	const theme = useMemo(() => mergeTheme(normalizedConfig.theme), [normalizedConfig.theme])
 	const [answers, setAnswers] = useState<WizardAnswerMap>(() =>

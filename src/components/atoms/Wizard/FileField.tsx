@@ -13,7 +13,11 @@ type Props = {
 }
 
 const toFileArray = (value: File[] | FileList | undefined) =>
-	value instanceof FileList ? Array.from(value) : Array.isArray(value) ? value : []
+	typeof FileList !== "undefined" && value instanceof FileList
+		? Array.from(value)
+		: Array.isArray(value)
+			? value
+			: []
 
 export default function FileField({ question, value, error, onChange, theme }: Props) {
 	const inputRef = useRef<HTMLInputElement | null>(null)
