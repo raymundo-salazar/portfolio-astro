@@ -1,0 +1,24 @@
+---
+import Wizard from "@/components/organisms/Wizard/index"
+import { briefWizardConfig } from "@/lib/brief-wizard/defaultConfig"
+
+import "@/styles/global.css"
+---
+
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Brief - Raymundo Salazar</title>
+		<meta
+			name="description"
+			content="Wizard configurable para levantar briefs complejos con pasos, validaciones y condiciones dinámicas."
+		/>
+		<meta name="robots" content="noindex, nofollow" />
+	</head>
+	<body class="bg-neutral-900 text-white">
+		<main class="min-h-screen w-full">
+			<Wizard client:load config={briefWizardConfig} />
+		</main>
+	</body>
+</html>

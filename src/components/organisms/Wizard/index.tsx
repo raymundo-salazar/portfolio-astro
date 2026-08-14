@@ -1,0 +1,418 @@
+import { useEffect, useMemo, useRef, useState } from "react"
+
+import ChoiceField from "@/components/atoms/Wizard/ChoiceField"
+import FileField from "@/components/atoms/Wizard/FileField"
+import RichTextField from "@/components/atoms/Wizard/RichTextField"
+import StaticContent from "@/components/atoms/Wizard/StaticContent"
+import TextField from "@/components/atoms/Wizard/TextField"
+import TextareaField from "@/components/atoms/Wizard/TextareaField"
+import ToggleField from "@/components/atoms/Wizard/ToggleField"
+import {
+	cn,
+	evaluateValidation,
+	getDefaultValue,
+	getFieldValueText,
+	getVisibleQuestions,
+	getVisibleSlides,
+	isQuestionVisible,
+} from "@/lib/brief-wizard/evaluate"
+import type {
+	FieldValue,
+	WizardAnswerMap,
+	WizardChoiceQuestion,
+	WizardConfig,
+	WizardFileQuestion,
+	WizardQuestion,
+	WizardSlide,
+} from "@/lib/brief-wizard/types"
+
+import StepSlide from "./StepSlide"
+import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiStar } from "react-icons/fi"
+
+type Props = {
+	config: WizardConfig
+	initialAnswers?: WizardAnswerMap
+	onComplete?: (answers: WizardAnswerMap) => void
+	className?: string
+}
+
+const themeFallback = {
+	root: "min-h-screen w-screen overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_36%),linear-gradient(135deg,_#09090b_0%,_#111827_50%,_#09090b_100%)] text-white",
+	panel: "mx-auto flex min-h-screen w-full max-w-7xl flex-col justify-center px-4 py-8 sm:px-6 lg:px-8",
+	hero: "mb-8 flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-white/5 px-6 py-6 shadow-2xl shadow-black/20 backdrop-blur-xl",
+	heroEyebrow: "text-xs font-semibold uppercase tracking-[0.32em] text-blue-300",
+	heroTitle: "text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl",
+	heroText: "max-w-4xl text-sm leading-7 text-gray-300 sm:text-base",
+	progressTrack: "h-2 rounded-full bg-white/10",
+	progressFill:
+		"h-2 rounded-full bg-gradient-to-r from-blue-400 via-sky-400 to-cyan-300 transition-all duration-300",
+	progressLabel: "text-sm font-medium text-gray-300",
+	stepCounter: "rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-200",
+	slideShell: "",
+	slideHeader: "",
+	slideTitle: "",
+	slideSubtitle: "",
+	questionStack: "",
+	questionShell: "",
+	label: "",
+	helper: "",
+	error: "",
+	input: "",
+	textarea: "",
+	select: "",
+	radio: "",
+	checkbox: "",
+	toolbar: "",
+	buttonPrimary:
+		"inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-40",
+	buttonSecondary:
+		"inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40",
+	buttonGhost:
+		"inline-flex items-center justify-center gap-2 rounded-2xl border border-dashed border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-gray-200 transition hover:border-blue-400/40 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40",
+	successShell: "rounded-[2rem] border border-emerald-400/30 bg-emerald-500/10 p-8 text-center",
+}
+
+const mergeTheme = (theme?: WizardConfig["theme"]) => ({ ...themeFallback, ...theme })
+
+const isFilesValue = (value: FieldValue): value is File[] | FileList =>
+	Array.isArray(value) || value instanceof FileList
+
+const renderQuestion = (
+	question: WizardQuestion,
+	value: FieldValue,
+	error: string | null,
+	setValue: (next: FieldValue) => void,
+	theme: ReturnType<typeof mergeTheme>
+) => {
+	switch (question.type) {
+		case "text":
+		case "email":
+		case "tel":
+		case "url":
+		case "number":
+			return (
+				<TextField
+					question={question}
+					value={
+						typeof value === "string" || typeof value === "number" ? value : undefined
+					}
+					error={error}
+					onChange={setValue as (value: string) => void}
+					theme={theme}
+				/>
+			)
+		case "textarea":
+			return (
+				<TextareaField
+					question={question}
+					value={typeof value === "string" ? value : undefined}
+					error={error}
+					onChange={setValue as (value: string) => void}
+					theme={theme}
+				/>
+			)
+		case "richtext":
+			return (
+				<RichTextField
+					question={question}
+					value={
+						typeof value === "object" && value && "html" in value ? value : undefined
+					}
+					error={error}
+					onChange={setValue as (value: { html: string; text: string }) => void}
+					theme={theme}
+				/>
+			)
+		case "radio":
+		case "select":
+		case "multiselect":
+			return (
+				<ChoiceField
+					question={question as WizardChoiceQuestion}
+					value={
+						typeof value === "string" || Array.isArray(value)
+							? (value as string | string[])
+							: undefined
+					}
+					error={error}
+					onChange={setValue as (value: string | string[]) => void}
+					theme={theme}
+				/>
+			)
+		case "checkbox":
+			return (
+				<ToggleField
+					question={question}
+					value={typeof value === "boolean" ? value : undefined}
+					error={error}
+					onChange={setValue as (value: boolean) => void}
+					theme={theme}
+				/>
+			)
+		case "file":
+		case "image":
+			return (
+				<FileField
+					question={question as WizardFileQuestion}
+					value={isFilesValue(value) ? value : undefined}
+					error={error}
+					onChange={setValue as (value: File[]) => void}
+					theme={theme}
+				/>
+			)
+		case "title":
+		case "subtitle":
+		case "static":
+			return <StaticContent question={question} theme={theme} />
+		default:
+			return null
+	}
+}
+
+export default function Wizard({ config, initialAnswers, onComplete, className }: Props) {
+	const theme = useMemo(() => mergeTheme(config.theme), [config.theme])
+	const [answers, setAnswers] = useState<WizardAnswerMap>(initialAnswers ?? {})
+	const [currentIndex, setCurrentIndex] = useState(0)
+	const [errors, setErrors] = useState<Record<string, string>>({})
+	const [completed, setCompleted] = useState(false)
+	const containerRef = useRef<HTMLDivElement | null>(null)
+
+	const visibleSlides = useMemo(
+		() => getVisibleSlides(config.slides, answers),
+		[answers, config.slides]
+	)
+	const currentSlide = visibleSlides[currentIndex] ?? visibleSlides[0]
+	const visibleQuestions = useMemo(
+		() => (currentSlide ? getVisibleQuestions(currentSlide, answers) : []),
+		[currentSlide, answers]
+	)
+
+	useEffect(() => {
+		if (!visibleSlides.length) return
+		if (currentIndex > visibleSlides.length - 1) setCurrentIndex(visibleSlides.length - 1)
+	}, [currentIndex, visibleSlides.length])
+
+	useEffect(() => {
+		if (!currentSlide) return
+		const currentVisibleIndex = visibleSlides.findIndex(slide => slide.id === currentSlide.id)
+		if (currentVisibleIndex !== currentIndex && currentVisibleIndex >= 0)
+			setCurrentIndex(currentVisibleIndex)
+	}, [currentIndex, currentSlide, visibleSlides])
+
+	const updateAnswer = (questionId: string, value: FieldValue) => {
+		setAnswers(prev => ({ ...prev, [questionId]: value }))
+		setErrors(prev => {
+			const next = { ...prev }
+			delete next[questionId]
+			return next
+		})
+	}
+
+	const validateQuestion = (question: WizardQuestion) => {
+		const value = answers[question.id]
+		const nextErrors = evaluateValidation(question, value)
+		return nextErrors[0] ?? null
+	}
+
+	const validateSlide = (slide: WizardSlide) => {
+		const nextErrors: Record<string, string> = {}
+		for (const question of getVisibleQuestions(slide, answers)) {
+			const message = validateQuestion(question)
+			if (message) nextErrors[question.id] = message
+		}
+		return nextErrors
+	}
+
+	const focusFirstError = (errorMap: Record<string, string>) => {
+		const firstId = Object.keys(errorMap)[0]
+		if (!firstId || !containerRef.current) return
+
+		const selector = [
+			`[data-question-id="${firstId}"] input`,
+			`[data-question-id="${firstId}"] textarea`,
+			`[data-question-id="${firstId}"] select`,
+			`[data-question-id="${firstId}"] [contenteditable="true"]`,
+			`[data-question-id="${firstId}"] button`,
+		].join(", ")
+		const target = containerRef.current.querySelector<HTMLElement>(selector)
+		target?.focus?.()
+		target?.scrollIntoView({ behavior: "smooth", block: "center" })
+	}
+
+	const handleNext = () => {
+		if (!currentSlide) return
+
+		const slideErrors = validateSlide(currentSlide)
+		if (Object.keys(slideErrors).length) {
+			setErrors(prev => ({ ...prev, ...slideErrors }))
+			requestAnimationFrame(() => focusFirstError(slideErrors))
+			return
+		}
+
+		if (currentIndex >= visibleSlides.length - 1) {
+			setCompleted(true)
+			onComplete?.(answers)
+			return
+		}
+
+		setCurrentIndex(index => Math.min(index + 1, visibleSlides.length - 1))
+	}
+
+	const handleBack = () => setCurrentIndex(index => Math.max(index - 1, 0))
+
+	const progress =
+		visibleSlides.length > 0 ? ((currentIndex + 1) / visibleSlides.length) * 100 : 0
+
+	if (completed) {
+		return (
+			<div className={cn(theme.root, className)}>
+				<div className={theme.panel}>
+					<div className={theme.successShell}>
+						<FiCheckCircle className="mx-auto mb-4 h-12 w-12 text-emerald-300" />
+						<h2 className="text-3xl font-semibold text-white">{config.title}</h2>
+						<p className="mt-3 text-base text-emerald-100/90">
+							Gracias. El brief quedó completo y listo para enviarse.
+						</p>
+						<div className="mt-6 grid gap-3 text-left sm:grid-cols-2">
+							{Object.entries(answers).map(([key, value]) => (
+								<div
+									key={key}
+									className="rounded-2xl border border-white/10 bg-neutral-950/40 p-4"
+								>
+									<p className="text-xs uppercase tracking-[0.24em] text-emerald-200">
+										{key}
+									</p>
+									<p className="mt-2 text-sm text-white">
+										{getFieldValueText(value)}
+									</p>
+								</div>
+							))}
+						</div>
+					</div>
+				</div>
+			</div>
+		)
+	}
+
+	if (!visibleSlides.length) {
+		return (
+			<div className={cn(theme.root, className)}>
+				<div className={theme.panel}>
+					<p className="rounded-[2rem] border border-amber-400/30 bg-amber-500/10 p-8 text-center text-amber-100">
+						No hay slides visibles para la configuración actual.
+					</p>
+				</div>
+			</div>
+		)
+	}
+
+	const currentErrors = Object.fromEntries(
+		Object.entries(errors).filter(([key]) =>
+			visibleQuestions.some(question => question.id === key)
+		)
+	)
+
+	return (
+		<div ref={containerRef} className={cn(theme.root, className)}>
+			<div className={theme.panel}>
+				<div className={theme.hero}>
+					<p className={theme.heroEyebrow}>{config.eyebrow ?? "Brief interactivo"}</p>
+					<div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+						<div className="space-y-2">
+							<h1 className={theme.heroTitle}>{config.title}</h1>
+							{config.subtitle ? (
+								<p className={theme.heroText}>{config.subtitle}</p>
+							) : null}
+						</div>
+						<div className={theme.stepCounter}>
+							{config.counterLabel ?? "Paso"} {currentIndex + 1}/
+							{visibleSlides.length}
+						</div>
+					</div>
+
+					<div className="space-y-2">
+						<div
+							className={cn("flex items-center justify-between", theme.progressLabel)}
+						>
+							<span>{config.progressLabel ?? "Progreso del brief"}</span>
+							<span>{Math.round(progress)}%</span>
+						</div>
+						<div className={theme.progressTrack}>
+							<div className={theme.progressFill} style={{ width: `${progress}%` }} />
+						</div>
+					</div>
+				</div>
+
+				<StepSlide
+					title={currentSlide.title}
+					subtitle={currentSlide.subtitle}
+					description={currentSlide.description}
+					className={currentSlide.className}
+					theme={theme}
+				>
+					{visibleQuestions.map(question => {
+						const value = answers[question.id] ?? getDefaultValue(question)
+						const error = currentErrors[question.id] ?? null
+
+						return (
+							<div key={question.id} data-question-id={question.id}>
+								{renderQuestion(
+									question,
+									value,
+									error,
+									next => updateAnswer(question.id, next),
+									theme
+								)}
+							</div>
+						)
+					})}
+
+					<div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
+						<button
+							type="button"
+							onClick={handleBack}
+							disabled={currentIndex === 0}
+							className={theme.buttonSecondary}
+						>
+							<FiArrowLeft className="h-4 w-4" />
+							{config.buttons?.previous ?? "Volver"}
+						</button>
+
+						<div className="flex items-center gap-3">
+							<span className="hidden text-sm text-gray-400 sm:inline">
+								{
+									visibleQuestions.filter(question =>
+										isQuestionVisible(question, answers)
+									).length
+								}{" "}
+								preguntas visibles
+							</span>
+
+							<button
+								type="button"
+								onClick={handleNext}
+								className={theme.buttonPrimary}
+							>
+								{currentIndex >= visibleSlides.length - 1
+									? (config.buttons?.finish ?? "Enviar brief")
+									: (config.buttons?.next ?? "Avanzar")}
+								<FiArrowRight className="h-4 w-4" />
+							</button>
+						</div>
+					</div>
+				</StepSlide>
+
+				<div className="mt-4 rounded-[1.75rem] border border-white/10 bg-white/5 px-5 py-4 text-sm text-gray-300 backdrop-blur-xl">
+					<div className="flex items-center gap-2 text-blue-300">
+						<FiStar className="h-4 w-4" />
+						<span className="font-medium">Vista previa de datos</span>
+					</div>
+					<p className="mt-2 text-gray-400">
+						El wizard responde al JSON de configuración, evalúa visibilidad y valida
+						cada paso antes de avanzar.
+					</p>
+				</div>
+			</div>
+		</div>
+	)
+}
