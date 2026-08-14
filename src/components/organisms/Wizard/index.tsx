@@ -9,30 +9,36 @@ import TextareaField from "@/components/atoms/Wizard/TextareaField"
 import ToggleField from "@/components/atoms/Wizard/ToggleField"
 import {
 	cn,
-	evaluateValidation,
+	createInitialAnswers,
 	getDefaultValue,
 	getFieldValueText,
+	getFirstVisibleSlideIndex,
+	getStepErrors,
 	getVisibleQuestions,
 	getVisibleSlides,
-	isQuestionVisible,
+	getWizardProgress,
+	normalizeWizardConfig,
 } from "@/lib/brief-wizard/evaluate"
 import type {
 	FieldValue,
 	WizardAnswerMap,
-	WizardChoiceQuestion,
 	WizardConfig,
-	WizardFileQuestion,
+	WizardCustomValidator,
 	WizardQuestion,
 	WizardSlide,
 } from "@/lib/brief-wizard/types"
+import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiStar } from "react-icons/fi"
 
 import StepSlide from "./StepSlide"
-import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiStar } from "react-icons/fi"
 
 type Props = {
 	config: WizardConfig
 	initialAnswers?: WizardAnswerMap
-	onComplete?: (answers: WizardAnswerMap) => void
+	onComplete?: (answers: WizardAnswerMap) => void | Promise<void>
+	onSubmit?: (answers: WizardAnswerMap) => void | Promise<void>
+	onChange?: (answers: WizardAnswerMap) => void
+	onStepChange?: (step: WizardSlide, index: number) => void
+	customValidators?: Record<string, WizardCustomValidator>
 	className?: string
 }
 
@@ -90,6 +96,7 @@ const renderQuestion = (
 		case "tel":
 		case "url":
 		case "number":
+		case "date":
 			return (
 				<TextField
 					question={question}
@@ -97,7 +104,7 @@ const renderQuestion = (
 						typeof value === "string" || typeof value === "number" ? value : undefined
 					}
 					error={error}
-					onChange={setValue as (value: string) => void}
+					onChange={setValue as (next: string) => void}
 					theme={theme}
 				/>
 			)
@@ -107,7 +114,7 @@ const renderQuestion = (
 					question={question}
 					value={typeof value === "string" ? value : undefined}
 					error={error}
-					onChange={setValue as (value: string) => void}
+					onChange={setValue as (next: string) => void}
 					theme={theme}
 				/>
 			)
@@ -119,7 +126,7 @@ const renderQuestion = (
 						typeof value === "object" && value && "html" in value ? value : undefined
 					}
 					error={error}
-					onChange={setValue as (value: { html: string; text: string }) => void}
+					onChange={setValue as (next: { html: string; text: string }) => void}
 					theme={theme}
 				/>
 			)
@@ -128,14 +135,10 @@ const renderQuestion = (
 		case "multiselect":
 			return (
 				<ChoiceField
-					question={question as WizardChoiceQuestion}
-					value={
-						typeof value === "string" || Array.isArray(value)
-							? (value as string | string[])
-							: undefined
-					}
+					question={question}
+					value={typeof value === "string" || Array.isArray(value) ? value : undefined}
 					error={error}
-					onChange={setValue as (value: string | string[]) => void}
+					onChange={setValue as (next: string | string[]) => void}
 					theme={theme}
 				/>
 			)
@@ -145,7 +148,7 @@ const renderQuestion = (
 					question={question}
 					value={typeof value === "boolean" ? value : undefined}
 					error={error}
-					onChange={setValue as (value: boolean) => void}
+					onChange={setValue as (next: boolean) => void}
 					theme={theme}
 				/>
 			)
@@ -153,10 +156,10 @@ const renderQuestion = (
 		case "image":
 			return (
 				<FileField
-					question={question as WizardFileQuestion}
+					question={question}
 					value={isFilesValue(value) ? value : undefined}
 					error={error}
-					onChange={setValue as (value: File[]) => void}
+					onChange={setValue as (next: File[]) => void}
 					theme={theme}
 				/>
 			)
@@ -169,35 +172,79 @@ const renderQuestion = (
 	}
 }
 
-export default function Wizard({ config, initialAnswers, onComplete, className }: Props) {
-	const theme = useMemo(() => mergeTheme(config.theme), [config.theme])
-	const [answers, setAnswers] = useState<WizardAnswerMap>(initialAnswers ?? {})
-	const [currentIndex, setCurrentIndex] = useState(0)
+export default function Wizard({
+	config,
+	initialAnswers,
+	onComplete,
+	onSubmit,
+	onChange,
+	onStepChange,
+	customValidators = {},
+	className,
+}: Props) {
+	const normalizedConfig = useMemo(() => normalizeWizardConfig(config), [config])
+	const theme = useMemo(() => mergeTheme(normalizedConfig.theme), [normalizedConfig.theme])
+	const [answers, setAnswers] = useState<WizardAnswerMap>(() =>
+		createInitialAnswers(normalizedConfig, initialAnswers)
+	)
+	const [currentIndex, setCurrentIndex] = useState(() =>
+		Math.max(
+			getFirstVisibleSlideIndex(
+				normalizedConfig,
+				createInitialAnswers(normalizedConfig, initialAnswers)
+			),
+			0
+		)
+	)
 	const [errors, setErrors] = useState<Record<string, string>>({})
 	const [completed, setCompleted] = useState(false)
 	const containerRef = useRef<HTMLDivElement | null>(null)
 
 	const visibleSlides = useMemo(
-		() => getVisibleSlides(config.slides, answers),
-		[answers, config.slides]
+		() => getVisibleSlides(normalizedConfig.slides, answers),
+		[normalizedConfig.slides, answers]
 	)
 	const currentSlide = visibleSlides[currentIndex] ?? visibleSlides[0]
 	const visibleQuestions = useMemo(
 		() => (currentSlide ? getVisibleQuestions(currentSlide, answers) : []),
 		[currentSlide, answers]
 	)
+	const progress = useMemo(
+		() => getWizardProgress(normalizedConfig, currentIndex, answers),
+		[normalizedConfig, currentIndex, answers]
+	)
+
+	useEffect(() => {
+		const nextAnswers = createInitialAnswers(normalizedConfig, initialAnswers)
+		setAnswers(nextAnswers)
+		setErrors({})
+		setCompleted(false)
+		setCurrentIndex(Math.max(getFirstVisibleSlideIndex(normalizedConfig, nextAnswers), 0))
+	}, [normalizedConfig, initialAnswers])
 
 	useEffect(() => {
 		if (!visibleSlides.length) return
-		if (currentIndex > visibleSlides.length - 1) setCurrentIndex(visibleSlides.length - 1)
-	}, [currentIndex, visibleSlides.length])
+
+		const visibleIndex = visibleSlides.findIndex(slide => slide.id === currentSlide?.id)
+		if (visibleIndex === -1) {
+			setCurrentIndex(0)
+			return
+		}
+
+		if (visibleIndex !== currentIndex) {
+			setCurrentIndex(visibleIndex)
+		}
+	}, [currentIndex, currentSlide?.id, visibleSlides])
 
 	useEffect(() => {
-		if (!currentSlide) return
-		const currentVisibleIndex = visibleSlides.findIndex(slide => slide.id === currentSlide.id)
-		if (currentVisibleIndex !== currentIndex && currentVisibleIndex >= 0)
-			setCurrentIndex(currentVisibleIndex)
-	}, [currentIndex, currentSlide, visibleSlides])
+		onChange?.(answers)
+	}, [answers, onChange])
+
+	useEffect(() => {
+		if (currentSlide) {
+			onStepChange?.(currentSlide, currentIndex)
+		}
+	}, [currentIndex, currentSlide, onStepChange])
 
 	const updateAnswer = (questionId: string, value: FieldValue) => {
 		setAnswers(prev => ({ ...prev, [questionId]: value }))
@@ -208,20 +255,8 @@ export default function Wizard({ config, initialAnswers, onComplete, className }
 		})
 	}
 
-	const validateQuestion = (question: WizardQuestion) => {
-		const value = answers[question.id]
-		const nextErrors = evaluateValidation(question, value)
-		return nextErrors[0] ?? null
-	}
-
-	const validateSlide = (slide: WizardSlide) => {
-		const nextErrors: Record<string, string> = {}
-		for (const question of getVisibleQuestions(slide, answers)) {
-			const message = validateQuestion(question)
-			if (message) nextErrors[question.id] = message
-		}
-		return nextErrors
-	}
+	const validateCurrentSlide = (slide: WizardSlide) =>
+		getStepErrors(slide, answers, customValidators)
 
 	const focusFirstError = (errorMap: Record<string, string>) => {
 		const firstId = Object.keys(errorMap)[0]
@@ -239,10 +274,15 @@ export default function Wizard({ config, initialAnswers, onComplete, className }
 		target?.scrollIntoView({ behavior: "smooth", block: "center" })
 	}
 
+	const runFinalSubmit = async () => {
+		setCompleted(true)
+		await Promise.resolve(onSubmit?.(answers) ?? onComplete?.(answers))
+	}
+
 	const handleNext = () => {
 		if (!currentSlide) return
 
-		const slideErrors = validateSlide(currentSlide)
+		const slideErrors = validateCurrentSlide(currentSlide)
 		if (Object.keys(slideErrors).length) {
 			setErrors(prev => ({ ...prev, ...slideErrors }))
 			requestAnimationFrame(() => focusFirstError(slideErrors))
@@ -250,8 +290,7 @@ export default function Wizard({ config, initialAnswers, onComplete, className }
 		}
 
 		if (currentIndex >= visibleSlides.length - 1) {
-			setCompleted(true)
-			onComplete?.(answers)
+			void runFinalSubmit()
 			return
 		}
 
@@ -260,16 +299,15 @@ export default function Wizard({ config, initialAnswers, onComplete, className }
 
 	const handleBack = () => setCurrentIndex(index => Math.max(index - 1, 0))
 
-	const progress =
-		visibleSlides.length > 0 ? ((currentIndex + 1) / visibleSlides.length) * 100 : 0
-
 	if (completed) {
 		return (
 			<div className={cn(theme.root, className)}>
 				<div className={theme.panel}>
 					<div className={theme.successShell}>
 						<FiCheckCircle className="mx-auto mb-4 h-12 w-12 text-emerald-300" />
-						<h2 className="text-3xl font-semibold text-white">{config.title}</h2>
+						<h2 className="text-3xl font-semibold text-white">
+							{normalizedConfig.title}
+						</h2>
 						<p className="mt-3 text-base text-emerald-100/90">
 							Gracias. El brief quedó completo y listo para enviarse.
 						</p>
@@ -316,17 +354,22 @@ export default function Wizard({ config, initialAnswers, onComplete, className }
 		<div ref={containerRef} className={cn(theme.root, className)}>
 			<div className={theme.panel}>
 				<div className={theme.hero}>
-					<p className={theme.heroEyebrow}>{config.eyebrow ?? "Brief interactivo"}</p>
+					<p className={theme.heroEyebrow}>
+						{normalizedConfig.eyebrow ?? "Brief interactivo"}
+					</p>
 					<div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
 						<div className="space-y-2">
-							<h1 className={theme.heroTitle}>{config.title}</h1>
-							{config.subtitle ? (
-								<p className={theme.heroText}>{config.subtitle}</p>
+							<h1 className={theme.heroTitle}>{normalizedConfig.title}</h1>
+							{normalizedConfig.subtitle ? (
+								<p className={theme.heroText}>{normalizedConfig.subtitle}</p>
+							) : null}
+							{normalizedConfig.description ? (
+								<p className={theme.heroText}>{normalizedConfig.description}</p>
 							) : null}
 						</div>
 						<div className={theme.stepCounter}>
-							{config.counterLabel ?? "Paso"} {currentIndex + 1}/
-							{visibleSlides.length}
+							{normalizedConfig.counterLabel ?? "Paso"} {progress.currentIndex + 1}/
+							{progress.total}
 						</div>
 					</div>
 
@@ -334,11 +377,14 @@ export default function Wizard({ config, initialAnswers, onComplete, className }
 						<div
 							className={cn("flex items-center justify-between", theme.progressLabel)}
 						>
-							<span>{config.progressLabel ?? "Progreso del brief"}</span>
-							<span>{Math.round(progress)}%</span>
+							<span>{normalizedConfig.progressLabel ?? "Progreso del brief"}</span>
+							<span>{Math.round(progress.percentage)}%</span>
 						</div>
 						<div className={theme.progressTrack}>
-							<div className={theme.progressFill} style={{ width: `${progress}%` }} />
+							<div
+								className={theme.progressFill}
+								style={{ width: `${progress.percentage}%` }}
+							/>
 						</div>
 					</div>
 				</div>
@@ -375,17 +421,12 @@ export default function Wizard({ config, initialAnswers, onComplete, className }
 							className={theme.buttonSecondary}
 						>
 							<FiArrowLeft className="h-4 w-4" />
-							{config.buttons?.previous ?? "Volver"}
+							{normalizedConfig.buttons?.previous ?? "Volver"}
 						</button>
 
 						<div className="flex items-center gap-3">
 							<span className="hidden text-sm text-gray-400 sm:inline">
-								{
-									visibleQuestions.filter(question =>
-										isQuestionVisible(question, answers)
-									).length
-								}{" "}
-								preguntas visibles
+								{visibleQuestions.length} preguntas visibles
 							</span>
 
 							<button
@@ -394,8 +435,8 @@ export default function Wizard({ config, initialAnswers, onComplete, className }
 								className={theme.buttonPrimary}
 							>
 								{currentIndex >= visibleSlides.length - 1
-									? (config.buttons?.finish ?? "Enviar brief")
-									: (config.buttons?.next ?? "Avanzar")}
+									? (normalizedConfig.buttons?.finish ?? "Enviar brief")
+									: (normalizedConfig.buttons?.next ?? "Avanzar")}
 								<FiArrowRight className="h-4 w-4" />
 							</button>
 						</div>

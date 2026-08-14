@@ -19,6 +19,7 @@ export default function TextField({ question, value, error, onChange, theme }: P
 		if (question.type === "email") return "email"
 		if (question.type === "tel") return "tel"
 		if (question.type === "url") return "url"
+		if (question.type === "date") return "date"
 		return "text"
 	}, [question.type])
 

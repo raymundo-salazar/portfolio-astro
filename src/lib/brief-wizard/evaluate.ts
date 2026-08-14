@@ -148,6 +148,8 @@ export const getDefaultValue = (question: WizardQuestion): FieldValue => {
 			return { html: "", text: "" }
 		case "number":
 			return null
+		case "date":
+			return ""
 		default:
 			return ""
 	}
@@ -175,7 +177,7 @@ const getErrorMessage = (question: WizardQuestion, fallback: string) =>
 const passesValidationCondition = (rule: ValidationRule, answers: WizardAnswerMap) =>
 	!("when" in rule) || evaluateVisibilityCondition(rule.when, answers)
 
-const getFileCount = (value: FieldValue) => {
+export const getFileCount = (value: FieldValue) => {
 	if (value instanceof FileList) return value.length
 	if (Array.isArray(value) && value.every(item => item instanceof File)) return value.length
 	if (value instanceof File) return 1
