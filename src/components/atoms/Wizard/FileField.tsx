@@ -39,7 +39,7 @@ export default function FileField({ question, value, error, onChange, theme }: P
 			label={question.label}
 			helperText={question.helperText}
 			error={error}
-			required={question.required}
+			required={typeof question.required === "boolean" ? question.required : false}
 			iconLeft={question.iconLeft}
 			iconRight={question.iconRight}
 			className={question.className}

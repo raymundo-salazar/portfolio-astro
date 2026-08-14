@@ -140,7 +140,7 @@ export interface WizardQuestionBase {
 }
 
 export interface WizardTextQuestion extends WizardQuestionBase {
-	type: "text" | "email" | "tel" | "url" | "number"
+	type: "text" | "email" | "tel" | "url" | "number" | "date"
 	label: string
 }
 
