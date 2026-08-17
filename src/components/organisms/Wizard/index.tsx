@@ -81,7 +81,7 @@ const themeFallback = {
 const mergeTheme = (theme?: WizardConfig["theme"]) => ({ ...themeFallback, ...theme })
 const FOOTER_HEIGHT = 88
 const PROGRESS_HEIGHT = 7
-const ACTIVE_SEGMENT_HEIGHT = 10
+const ACTIVE_SEGMENT_HEIGHT = 12
 
 type SlideStatus = "active" | "success" | "pending" | "blocked"
 
