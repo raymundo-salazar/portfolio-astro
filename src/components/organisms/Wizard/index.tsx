@@ -80,7 +80,8 @@ const themeFallback = {
 
 const mergeTheme = (theme?: WizardConfig["theme"]) => ({ ...themeFallback, ...theme })
 const FOOTER_HEIGHT = 88
-const PROGRESS_HEIGHT = 10
+const PROGRESS_HEIGHT = 7
+const ACTIVE_SEGMENT_HEIGHT = 10
 
 type SlideStatus = "active" | "success" | "pending" | "blocked"
 
@@ -454,7 +455,7 @@ export default function Wizard({
 			>
 				<div className="mx-auto flex h-full w-full max-w-none items-stretch px-0">
 					<div
-						className="grid h-full w-full gap-x-2"
+						className="grid h-full w-full gap-x-2 transition-all duration-300 ease-out"
 						style={{
 							gridTemplateColumns: `repeat(${allSlides.length}, minmax(0, 1fr))`,
 						}}
@@ -473,14 +474,20 @@ export default function Wizard({
 							return (
 								<div
 									key={slide.id}
-									className="relative h-full overflow-visible bg-transparent"
+									className="relative h-full overflow-visible bg-transparent transition-all duration-300 ease-out"
 								>
 									{isActive ? (
-										<div className="pointer-events-none absolute inset-[-1px] z-0 bg-sky-300/45 animate-pulse" />
+										<div
+											className="pointer-events-none absolute inset-x-0 z-0 bg-sky-300/45 transition-all duration-300 ease-out animate-pulse"
+											style={{
+												top: `-${(ACTIVE_SEGMENT_HEIGHT - PROGRESS_HEIGHT) / 2}px`,
+												bottom: `-${(ACTIVE_SEGMENT_HEIGHT - PROGRESS_HEIGHT) / 2}px`,
+											}}
+										/>
 									) : null}
 									<div
 										className={cn(
-											"relative z-10 h-full w-full",
+											"relative z-10 h-full w-full transition-all duration-300 ease-out",
 											barColor,
 											status === "active"
 												? "shadow-[inset_0_0_0_1px_rgba(96,165,250,0.45)]"
