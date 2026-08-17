@@ -29,8 +29,9 @@ export default function StaticContent({ question, theme }: Props) {
 	}
 
 	return (
-		<p className={cn("max-w-3xl text-base leading-7 text-gray-300", theme?.heroText)}>
-			{question.content}
-		</p>
+		<div
+			className={cn("max-w-3xl space-y-4 text-base leading-7 text-gray-300", theme?.heroText)}
+			dangerouslySetInnerHTML={{ __html: question.content }}
+		/>
 	)
 }

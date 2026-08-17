@@ -17,7 +17,6 @@ import {
 	isSlideVisible,
 	getVisibleQuestions,
 	getVisibleSlides,
-	getWizardProgress,
 	normalizeWizardConfig,
 } from "@/lib/brief-wizard/evaluate"
 import type {
@@ -80,8 +79,8 @@ const themeFallback = {
 }
 
 const mergeTheme = (theme?: WizardConfig["theme"]) => ({ ...themeFallback, ...theme })
-const HEADER_HEIGHT = 88
-const FOOTER_HEIGHT = 138
+const FOOTER_HEIGHT = 88
+const PROGRESS_HEIGHT = 24
 
 type SlideStatus = "active" | "success" | "pending" | "blocked"
 
@@ -207,7 +206,8 @@ export default function Wizard({
 	const headerRef = useRef<HTMLElement | null>(null)
 	const footerRef = useRef<HTMLElement | null>(null)
 	const contentRef = useRef<HTMLDivElement | null>(null)
-	const [isCompactLayout, setIsCompactLayout] = useState(true)
+	const mainRef = useRef<HTMLElement | null>(null)
+	const [isScrolled, setIsScrolled] = useState(false)
 
 	const visibleSlides = useMemo(
 		() => getVisibleSlides(normalizedConfig.slides, answers),
@@ -217,10 +217,6 @@ export default function Wizard({
 	const visibleQuestions = useMemo(
 		() => (currentSlide ? getVisibleQuestions(currentSlide, answers) : []),
 		[currentSlide, answers]
-	)
-	const progress = useMemo(
-		() => getWizardProgress(normalizedConfig, currentIndex, answers),
-		[normalizedConfig, currentIndex, answers]
 	)
 	const allSlides = normalizedConfig.slides
 
@@ -257,32 +253,18 @@ export default function Wizard({
 	}, [currentIndex, currentSlide, onStepChange])
 
 	useEffect(() => {
-		const measureLayout = () => {
-			const contentHeight = contentRef.current?.scrollHeight ?? 0
-			const headerHeight = headerRef.current?.offsetHeight ?? HEADER_HEIGHT
-			const footerHeight = footerRef.current?.offsetHeight ?? FOOTER_HEIGHT
-			const availableHeight = window.innerHeight - headerHeight - footerHeight - 40
-			setIsCompactLayout(contentHeight <= availableHeight)
+		const scroller = mainRef.current
+		if (!scroller) return
+
+		const updateScrollState = () => {
+			setIsScrolled(scroller.scrollTop > 8)
 		}
 
-		const raf = window.requestAnimationFrame(measureLayout)
-		const resizeObserver =
-			typeof window.ResizeObserver !== "undefined"
-				? new window.ResizeObserver(measureLayout)
-				: null
+		updateScrollState()
+		scroller.addEventListener("scroll", updateScrollState, { passive: true })
 
-		if (headerRef.current) resizeObserver?.observe(headerRef.current)
-		if (footerRef.current) resizeObserver?.observe(footerRef.current)
-		if (contentRef.current) resizeObserver?.observe(contentRef.current)
-
-		window.addEventListener("resize", measureLayout)
-
-		return () => {
-			window.cancelAnimationFrame(raf)
-			resizeObserver?.disconnect()
-			window.removeEventListener("resize", measureLayout)
-		}
-	}, [currentIndex, visibleQuestions.length, currentSlide?.id, answers, normalizedConfig])
+		return () => scroller.removeEventListener("scroll", updateScrollState)
+	}, [])
 
 	const updateAnswer = (questionId: string, value: FieldValue) => {
 		setAnswers(prev => ({ ...prev, [questionId]: value }))
@@ -388,9 +370,13 @@ export default function Wizard({
 		)
 	)
 	const currentVisibleIndex = visibleSlides.findIndex(item => item.id === currentSlide.id)
+	const currentOriginalIndex = allSlides.findIndex(item => item.id === currentSlide.id)
 
 	const getSlideStatus = (slide: WizardSlide): SlideStatus => {
-		if (!isSlideVisible(slide, answers)) return "blocked"
+		const slideOriginalIndex = allSlides.findIndex(item => item.id === slide.id)
+		if (!isSlideVisible(slide, answers)) {
+			return slideOriginalIndex < currentOriginalIndex ? "blocked" : "pending"
+		}
 		if (slide.id === currentSlide.id) return "active"
 
 		const slideVisibleIndex = visibleSlides.findIndex(item => item.id === slide.id)
@@ -398,18 +384,16 @@ export default function Wizard({
 		return slideVisibleIndex < currentVisibleIndex ? "success" : "pending"
 	}
 
-	const slideStatusClasses: Record<SlideStatus, string> = {
-		active: "bg-blue-500 ring-2 ring-blue-300/80 shadow-[0_0_0_1px_rgba(96,165,250,0.85),0_0_20px_rgba(59,130,246,0.55)] animate-pulse",
-		success: "bg-emerald-500 shadow-[0_0_0_1px_rgba(74,222,128,0.3)]",
-		pending: "bg-white/20",
-		blocked: "bg-white/10 opacity-50",
-	}
-
 	return (
 		<div ref={containerRef} className={cn(theme.root, className)}>
 			<header
 				ref={headerRef}
-				className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-neutral-950 text-white shadow-[0_8px_24px_rgba(0,0,0,0.28)]"
+				className={cn(
+					"fixed inset-x-0 top-0 z-50 border-b text-white transition-all duration-300",
+					isScrolled
+						? "border-white/10 bg-neutral-950/80 shadow-[0_8px_24px_rgba(0,0,0,0.28)] backdrop-blur-md"
+						: "border-transparent bg-transparent shadow-none backdrop-blur-none"
+				)}
 			>
 				<div className="mx-auto flex h-[88px] w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
 					<div className="flex items-center gap-3">
@@ -430,15 +414,10 @@ export default function Wizard({
 				</div>
 			</header>
 
-			<main className="relative h-screen overflow-y-auto pt-[88px] pb-[138px]">
+			<main ref={mainRef} className="relative h-screen overflow-y-auto pt-[88px] pb-[112px]">
 				<div
 					ref={contentRef}
-					className={cn(
-						"mx-auto flex min-h-[calc(100vh-226px)] w-full max-w-7xl px-4 sm:px-6 lg:px-8",
-						isCompactLayout
-							? "items-center justify-center"
-							: "items-start justify-center pt-10"
-					)}
+					className="mx-auto flex min-h-[calc(100vh-200px)] w-full items-center justify-center px-4 sm:px-6 lg:px-8"
 				>
 					<div className="w-full max-w-2xl">
 						<StepSlide
@@ -469,61 +448,68 @@ export default function Wizard({
 				</div>
 			</main>
 
-			<footer
-				ref={footerRef}
-				className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-neutral-950/95 text-white shadow-[0_-8px_24px_rgba(0,0,0,0.28)] backdrop-blur-sm"
+			<div
+				className="fixed inset-x-0 z-40"
+				style={{ bottom: `${FOOTER_HEIGHT}px`, height: `${PROGRESS_HEIGHT}px` }}
 			>
-				<div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
+				<div className="mx-auto flex h-full w-full max-w-none items-stretch px-0">
 					<div
-						className="grid gap-1"
+						className="grid h-full w-full gap-0"
 						style={{
 							gridTemplateColumns: `repeat(${allSlides.length}, minmax(0, 1fr))`,
 						}}
 					>
 						{allSlides.map(slide => {
 							const status = getSlideStatus(slide)
+							const isActive = status === "active"
 							return (
 								<div
 									key={slide.id}
 									className={cn(
-										"h-2 rounded-full transition-all duration-300",
-										slideStatusClasses[status]
+										"relative h-full overflow-visible",
+										status === "active"
+											? "bg-blue-500 shadow-[inset_0_0_0_1px_rgba(96,165,250,0.45)]"
+											: status === "success"
+												? "bg-emerald-500"
+												: status === "blocked"
+													? "bg-neutral-500/70"
+													: "bg-neutral-700/70",
+										"first:rounded-l-full last:rounded-r-full"
 									)}
-									title={slide.title ?? slide.id}
-								/>
+								>
+									{isActive ? (
+										<div className="pointer-events-none absolute inset-[-5px] rounded-full border border-blue-300/80 shadow-[0_0_0_1px_rgba(96,165,250,0.55),0_0_16px_rgba(59,130,246,0.6)] animate-pulse" />
+									) : null}
+								</div>
 							)
 						})}
 					</div>
+				</div>
+			</div>
 
-					<div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-						<button
-							type="button"
-							onClick={handleBack}
-							disabled={currentIndex === 0}
-							className={theme.buttonSecondary}
-						>
-							<FiArrowLeft className="h-4 w-4" />
-							{normalizedConfig.buttons?.previous ?? "Regresar"}
-						</button>
+			<footer
+				ref={footerRef}
+				className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-neutral-950/75 text-white shadow-[0_-8px_24px_rgba(0,0,0,0.22)] backdrop-blur-md"
+			>
+				<div className="mx-auto flex h-[88px] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+					<button
+						type="button"
+						onClick={handleBack}
+						disabled={currentIndex === 0}
+						className={theme.buttonSecondary}
+					>
+						<FiArrowLeft className="h-4 w-4" />
+						{normalizedConfig.buttons?.previous ?? "Regresar"}
+					</button>
 
-						<div className="flex items-center gap-3">
-							<span className="hidden text-sm text-gray-400 sm:inline">
-								{normalizedConfig.counterLabel ?? "Paso"}{" "}
-								{progress.currentIndex + 1}/{progress.total}
-							</span>
-
-							<button
-								type="button"
-								onClick={handleNext}
-								className={theme.buttonPrimary}
-							>
-								{currentIndex >= visibleSlides.length - 1
-									? (normalizedConfig.buttons?.finish ?? "Enviar brief")
-									: (normalizedConfig.buttons?.next ?? "Continuar")}
-								<FiArrowRight className="h-4 w-4" />
-							</button>
-						</div>
-					</div>
+					<button type="button" onClick={handleNext} className={theme.buttonPrimary}>
+						{currentIndex >= visibleSlides.length - 1
+							? (normalizedConfig.buttons?.finish ?? "Enviar brief")
+							: currentSlide.id === "welcome"
+								? "Comenzar"
+								: (normalizedConfig.buttons?.next ?? "Continuar")}
+						<FiArrowRight className="h-4 w-4" />
+					</button>
 				</div>
 			</footer>
 		</div>

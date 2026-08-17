@@ -8,7 +8,6 @@ export const briefWizardConfig: WizardConfig = {
 	description:
 		"El objetivo es capturar requerimientos complejos sin perder claridad visual ni disciplina de validación.",
 	progressLabel: "Avance del brief",
-	counterLabel: "Paso",
 	buttons: {
 		previous: "Regresar",
 		next: "Continuar",
@@ -21,21 +20,18 @@ export const briefWizardConfig: WizardConfig = {
 	slides: [
 		{
 			id: "welcome",
-			title: "Bienvenido al brief",
-			subtitle: "Comencemos",
-			description:
-				"Este recorrido nos ayuda a entender tu proyecto antes de entrar a detalle. Avanzas paso a paso y solo contestas lo necesario.",
+			title: "Queremos conocer mejor tu visión",
 			questions: [
-				{
-					id: "welcomeTitle",
-					type: "title",
-					content: "Hola, vamos a diseñar tu wizard",
-				},
 				{
 					id: "welcomeCopy",
 					type: "static",
-					content:
-						"Aquí vamos a capturar contexto, alcance, activos y validaciones para construir un flujo claro, corto y útil. Respira hondo, no vamos a pedirte un sacrificio ceremonial.",
+					content: `
+						<p>Gracias por tomarte el tiempo de compartir un poco más sobre tu proyecto.</p>
+						<p>Antes de definir una solución o preparar una propuesta, queremos entender mejor <strong>tu negocio, tus objetivos, tus clientes y lo que esperas lograr</strong>.</p>
+						<p>Este cuestionario nos ayudará a conocer el contexto, identificar tus prioridades y entender qué necesitas realmente para poder construir una propuesta adecuada para ti.</p>
+						<p><strong>No necesitas tener todo definido.</strong> Responde con el nivel de detalle que tengas hoy; si algo aún no está claro o no aplica a tu proyecto, puedes indicarlo sin problema.</p>
+						<p><small>Tiempo estimado: 10–15 minutos</small></p>
+					`,
 				},
 			],
 		},
