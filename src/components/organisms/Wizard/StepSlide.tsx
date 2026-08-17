@@ -20,19 +20,13 @@ export default function StepSlide({
 	theme,
 }: Props) {
 	return (
-		<section
-			className={cn(
-				"rounded-[2rem] border border-white/10 bg-neutral-950/55 p-6 shadow-2xl shadow-black/20 backdrop-blur-xl sm:p-8",
-				theme?.slideShell,
-				className
-			)}
-		>
+		<section className={cn("mx-auto w-full max-w-2xl", theme?.slideShell, className)}>
 			{title || subtitle || description ? (
 				<header className={cn("mb-8 space-y-3", theme?.slideHeader)}>
 					{title ? (
 						<h3
 							className={cn(
-								"text-2xl font-semibold text-white sm:text-3xl",
+								"text-3xl font-semibold tracking-tight text-white sm:text-4xl",
 								theme?.slideTitle
 							)}
 						>
@@ -42,7 +36,7 @@ export default function StepSlide({
 					{subtitle ? (
 						<p
 							className={cn(
-								"text-sm uppercase tracking-[0.24em] text-blue-300",
+								"text-xs font-semibold uppercase tracking-[0.32em] text-blue-300",
 								theme?.slideSubtitle
 							)}
 						>
@@ -52,7 +46,7 @@ export default function StepSlide({
 					{description ? (
 						<p
 							className={cn(
-								"max-w-3xl text-sm leading-6 text-gray-300 sm:text-base",
+								"max-w-3xl text-base leading-7 text-gray-300 sm:text-lg",
 								theme?.heroText
 							)}
 						>
@@ -62,7 +56,7 @@ export default function StepSlide({
 				</header>
 			) : null}
 
-			<div className={cn("space-y-6", theme?.questionStack)}>{children}</div>
+			<div className={cn("space-y-8", theme?.questionStack)}>{children}</div>
 		</section>
 	)
 }

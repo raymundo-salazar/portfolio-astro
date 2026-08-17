@@ -14,6 +14,7 @@ import {
 	getFieldValueText,
 	getFirstVisibleSlideIndex,
 	getStepErrors,
+	isSlideVisible,
 	getVisibleQuestions,
 	getVisibleSlides,
 	getWizardProgress,
@@ -27,7 +28,7 @@ import type {
 	WizardQuestion,
 	WizardSlide,
 } from "@/lib/brief-wizard/types"
-import { FiArrowLeft, FiArrowRight, FiCheckCircle, FiStar } from "react-icons/fi"
+import { FiArrowLeft, FiArrowRight, FiCheckCircle } from "react-icons/fi"
 
 import StepSlide from "./StepSlide"
 
@@ -43,7 +44,7 @@ export type WizardProps = {
 }
 
 const themeFallback = {
-	root: "min-h-screen w-screen overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_36%),linear-gradient(135deg,_#09090b_0%,_#111827_50%,_#09090b_100%)] text-white",
+	root: "min-h-screen w-full overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_36%),linear-gradient(135deg,_#09090b_0%,_#111827_50%,_#09090b_100%)] text-white",
 	panel: "mx-auto flex min-h-screen w-full max-w-7xl flex-col justify-center px-4 py-8 sm:px-6 lg:px-8",
 	hero: "mb-8 flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-white/5 px-6 py-6 shadow-2xl shadow-black/20 backdrop-blur-xl",
 	heroEyebrow: "text-xs font-semibold uppercase tracking-[0.32em] text-blue-300",
@@ -79,6 +80,10 @@ const themeFallback = {
 }
 
 const mergeTheme = (theme?: WizardConfig["theme"]) => ({ ...themeFallback, ...theme })
+const HEADER_HEIGHT = 88
+const FOOTER_HEIGHT = 138
+
+type SlideStatus = "active" | "success" | "pending" | "blocked"
 
 const isFilesValue = (value: FieldValue): value is File[] | FileList =>
 	Array.isArray(value) || (typeof FileList !== "undefined" && value instanceof FileList)
@@ -199,6 +204,10 @@ export default function Wizard({
 	const [errors, setErrors] = useState<Record<string, string>>({})
 	const [completed, setCompleted] = useState(false)
 	const containerRef = useRef<HTMLDivElement | null>(null)
+	const headerRef = useRef<HTMLElement | null>(null)
+	const footerRef = useRef<HTMLElement | null>(null)
+	const contentRef = useRef<HTMLDivElement | null>(null)
+	const [isCompactLayout, setIsCompactLayout] = useState(true)
 
 	const visibleSlides = useMemo(
 		() => getVisibleSlides(normalizedConfig.slides, answers),
@@ -213,6 +222,7 @@ export default function Wizard({
 		() => getWizardProgress(normalizedConfig, currentIndex, answers),
 		[normalizedConfig, currentIndex, answers]
 	)
+	const allSlides = normalizedConfig.slides
 
 	useEffect(() => {
 		const nextAnswers = createInitialAnswers(normalizedConfig, initialAnswers)
@@ -245,6 +255,34 @@ export default function Wizard({
 			onStepChange?.(currentSlide, currentIndex)
 		}
 	}, [currentIndex, currentSlide, onStepChange])
+
+	useEffect(() => {
+		const measureLayout = () => {
+			const contentHeight = contentRef.current?.scrollHeight ?? 0
+			const headerHeight = headerRef.current?.offsetHeight ?? HEADER_HEIGHT
+			const footerHeight = footerRef.current?.offsetHeight ?? FOOTER_HEIGHT
+			const availableHeight = window.innerHeight - headerHeight - footerHeight - 40
+			setIsCompactLayout(contentHeight <= availableHeight)
+		}
+
+		const raf = window.requestAnimationFrame(measureLayout)
+		const resizeObserver =
+			typeof window.ResizeObserver !== "undefined"
+				? new window.ResizeObserver(measureLayout)
+				: null
+
+		if (headerRef.current) resizeObserver?.observe(headerRef.current)
+		if (footerRef.current) resizeObserver?.observe(footerRef.current)
+		if (contentRef.current) resizeObserver?.observe(contentRef.current)
+
+		window.addEventListener("resize", measureLayout)
+
+		return () => {
+			window.cancelAnimationFrame(raf)
+			resizeObserver?.disconnect()
+			window.removeEventListener("resize", measureLayout)
+		}
+	}, [currentIndex, visibleQuestions.length, currentSlide?.id, answers, normalizedConfig])
 
 	const updateAnswer = (questionId: string, value: FieldValue) => {
 		setAnswers(prev => ({ ...prev, [questionId]: value }))
@@ -349,71 +387,115 @@ export default function Wizard({
 			visibleQuestions.some(question => question.id === key)
 		)
 	)
+	const currentVisibleIndex = visibleSlides.findIndex(item => item.id === currentSlide.id)
+
+	const getSlideStatus = (slide: WizardSlide): SlideStatus => {
+		if (!isSlideVisible(slide, answers)) return "blocked"
+		if (slide.id === currentSlide.id) return "active"
+
+		const slideVisibleIndex = visibleSlides.findIndex(item => item.id === slide.id)
+
+		return slideVisibleIndex < currentVisibleIndex ? "success" : "pending"
+	}
+
+	const slideStatusClasses: Record<SlideStatus, string> = {
+		active: "bg-blue-500 ring-2 ring-blue-300/80 shadow-[0_0_0_1px_rgba(96,165,250,0.85),0_0_20px_rgba(59,130,246,0.55)] animate-pulse",
+		success: "bg-emerald-500 shadow-[0_0_0_1px_rgba(74,222,128,0.3)]",
+		pending: "bg-white/20",
+		blocked: "bg-white/10 opacity-50",
+	}
 
 	return (
 		<div ref={containerRef} className={cn(theme.root, className)}>
-			<div className={theme.panel}>
-				<div className={theme.hero}>
-					<p className={theme.heroEyebrow}>
-						{normalizedConfig.eyebrow ?? "Brief interactivo"}
-					</p>
-					<div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-						<div className="space-y-2">
-							<h1 className={theme.heroTitle}>{normalizedConfig.title}</h1>
-							{normalizedConfig.subtitle ? (
-								<p className={theme.heroText}>{normalizedConfig.subtitle}</p>
-							) : null}
-							{normalizedConfig.description ? (
-								<p className={theme.heroText}>{normalizedConfig.description}</p>
-							) : null}
-						</div>
-						<div className={theme.stepCounter}>
-							{normalizedConfig.counterLabel ?? "Paso"} {progress.currentIndex + 1}/
-							{progress.total}
-						</div>
-					</div>
-
-					<div className="space-y-2">
-						<div
-							className={cn("flex items-center justify-between", theme.progressLabel)}
-						>
-							<span>{normalizedConfig.progressLabel ?? "Progreso del brief"}</span>
-							<span>{Math.round(progress.percentage)}%</span>
-						</div>
-						<div className={theme.progressTrack}>
-							<div
-								className={theme.progressFill}
-								style={{ width: `${progress.percentage}%` }}
-							/>
+			<header
+				ref={headerRef}
+				className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-neutral-950 text-white shadow-[0_8px_24px_rgba(0,0,0,0.28)]"
+			>
+				<div className="mx-auto flex h-[88px] w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
+					<div className="flex items-center gap-3">
+						<img
+							src="/logo/logo-icon-white.webp"
+							alt="Raymundo Salazar"
+							className="h-11 w-11"
+						/>
+						<div className="leading-none">
+							<p className="text-[0.7rem] font-semibold uppercase tracking-[0.32em] text-blue-300">
+								Portafolio
+							</p>
+							<h1 className="text-lg font-semibold tracking-tight sm:text-xl">
+								Raymundo Salazar
+							</h1>
 						</div>
 					</div>
 				</div>
+			</header>
 
-				<StepSlide
-					title={currentSlide.title}
-					subtitle={currentSlide.subtitle}
-					description={currentSlide.description}
-					className={currentSlide.className}
-					theme={theme}
+			<main className="relative h-screen overflow-y-auto pt-[88px] pb-[138px]">
+				<div
+					ref={contentRef}
+					className={cn(
+						"mx-auto flex min-h-[calc(100vh-226px)] w-full max-w-7xl px-4 sm:px-6 lg:px-8",
+						isCompactLayout
+							? "items-center justify-center"
+							: "items-start justify-center pt-10"
+					)}
 				>
-					{visibleQuestions.map(question => {
-						const value = answers[question.id] ?? getDefaultValue(question)
-						const error = currentErrors[question.id] ?? null
+					<div className="w-full max-w-2xl">
+						<StepSlide
+							title={currentSlide.title}
+							subtitle={currentSlide.subtitle}
+							description={currentSlide.description}
+							className={currentSlide.className}
+							theme={theme}
+						>
+							{visibleQuestions.map(question => {
+								const value = answers[question.id] ?? getDefaultValue(question)
+								const error = currentErrors[question.id] ?? null
 
-						return (
-							<div key={question.id} data-question-id={question.id}>
-								{renderQuestion(
-									question,
-									value,
-									error,
-									next => updateAnswer(question.id, next),
-									theme
-								)}
-							</div>
-						)
-					})}
+								return (
+									<div key={question.id} data-question-id={question.id}>
+										{renderQuestion(
+											question,
+											value,
+											error,
+											next => updateAnswer(question.id, next),
+											theme
+										)}
+									</div>
+								)
+							})}
+						</StepSlide>
+					</div>
+				</div>
+			</main>
 
-					<div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
+			<footer
+				ref={footerRef}
+				className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-neutral-950/95 text-white shadow-[0_-8px_24px_rgba(0,0,0,0.28)] backdrop-blur-sm"
+			>
+				<div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
+					<div
+						className="grid gap-1"
+						style={{
+							gridTemplateColumns: `repeat(${allSlides.length}, minmax(0, 1fr))`,
+						}}
+					>
+						{allSlides.map(slide => {
+							const status = getSlideStatus(slide)
+							return (
+								<div
+									key={slide.id}
+									className={cn(
+										"h-2 rounded-full transition-all duration-300",
+										slideStatusClasses[status]
+									)}
+									title={slide.title ?? slide.id}
+								/>
+							)
+						})}
+					</div>
+
+					<div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
 						<button
 							type="button"
 							onClick={handleBack}
@@ -421,12 +503,13 @@ export default function Wizard({
 							className={theme.buttonSecondary}
 						>
 							<FiArrowLeft className="h-4 w-4" />
-							{normalizedConfig.buttons?.previous ?? "Volver"}
+							{normalizedConfig.buttons?.previous ?? "Regresar"}
 						</button>
 
 						<div className="flex items-center gap-3">
 							<span className="hidden text-sm text-gray-400 sm:inline">
-								{visibleQuestions.length} preguntas visibles
+								{normalizedConfig.counterLabel ?? "Paso"}{" "}
+								{progress.currentIndex + 1}/{progress.total}
 							</span>
 
 							<button
@@ -436,24 +519,13 @@ export default function Wizard({
 							>
 								{currentIndex >= visibleSlides.length - 1
 									? (normalizedConfig.buttons?.finish ?? "Enviar brief")
-									: (normalizedConfig.buttons?.next ?? "Avanzar")}
+									: (normalizedConfig.buttons?.next ?? "Continuar")}
 								<FiArrowRight className="h-4 w-4" />
 							</button>
 						</div>
 					</div>
-				</StepSlide>
-
-				<div className="mt-4 rounded-[1.75rem] border border-white/10 bg-white/5 px-5 py-4 text-sm text-gray-300 backdrop-blur-xl">
-					<div className="flex items-center gap-2 text-blue-300">
-						<FiStar className="h-4 w-4" />
-						<span className="font-medium">Vista previa de datos</span>
-					</div>
-					<p className="mt-2 text-gray-400">
-						El wizard responde al JSON de configuración, evalúa visibilidad y valida
-						cada paso antes de avanzar.
-					</p>
 				</div>
-			</div>
+			</footer>
 		</div>
 	)
 }

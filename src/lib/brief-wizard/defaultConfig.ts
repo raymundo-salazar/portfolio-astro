@@ -10,8 +10,8 @@ export const briefWizardConfig: WizardConfig = {
 	progressLabel: "Avance del brief",
 	counterLabel: "Paso",
 	buttons: {
-		previous: "Volver",
-		next: "Siguiente",
+		previous: "Regresar",
+		next: "Continuar",
 		finish: "Enviar brief",
 	},
 	theme: {
@@ -19,6 +19,26 @@ export const briefWizardConfig: WizardConfig = {
 		panel: "mx-auto flex min-h-screen w-full max-w-7xl flex-col justify-center px-4 py-8 sm:px-6 lg:px-8",
 	},
 	slides: [
+		{
+			id: "welcome",
+			title: "Bienvenido al brief",
+			subtitle: "Comencemos",
+			description:
+				"Este recorrido nos ayuda a entender tu proyecto antes de entrar a detalle. Avanzas paso a paso y solo contestas lo necesario.",
+			questions: [
+				{
+					id: "welcomeTitle",
+					type: "title",
+					content: "Hola, vamos a diseñar tu wizard",
+				},
+				{
+					id: "welcomeCopy",
+					type: "static",
+					content:
+						"Aquí vamos a capturar contexto, alcance, activos y validaciones para construir un flujo claro, corto y útil. Respira hondo, no vamos a pedirte un sacrificio ceremonial.",
+				},
+			],
+		},
 		{
 			id: "intro",
 			title: "Arranquemos con lo básico",
