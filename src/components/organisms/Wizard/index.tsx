@@ -80,7 +80,7 @@ const themeFallback = {
 
 const mergeTheme = (theme?: WizardConfig["theme"]) => ({ ...themeFallback, ...theme })
 const FOOTER_HEIGHT = 88
-const PROGRESS_HEIGHT = 24
+const PROGRESS_HEIGHT = 14
 
 type SlideStatus = "active" | "success" | "pending" | "blocked"
 
@@ -452,9 +452,9 @@ export default function Wizard({
 				className="fixed inset-x-0 z-40"
 				style={{ bottom: `${FOOTER_HEIGHT}px`, height: `${PROGRESS_HEIGHT}px` }}
 			>
-				<div className="mx-auto flex h-full w-full max-w-none items-stretch px-0">
+				<div className="mx-auto flex h-full w-full max-w-none items-stretch px-4 sm:px-6 lg:px-8">
 					<div
-						className="grid h-full w-full gap-0"
+						className="grid h-full w-full gap-x-2"
 						style={{
 							gridTemplateColumns: `repeat(${allSlides.length}, minmax(0, 1fr))`,
 						}}
@@ -462,24 +462,34 @@ export default function Wizard({
 						{allSlides.map(slide => {
 							const status = getSlideStatus(slide)
 							const isActive = status === "active"
+							const barColor =
+								status === "active"
+									? "bg-blue-500"
+									: status === "success"
+										? "bg-emerald-500"
+										: status === "blocked"
+											? "bg-neutral-500/70"
+											: "bg-neutral-700/70"
 							return (
 								<div
 									key={slide.id}
 									className={cn(
-										"relative h-full overflow-visible",
-										status === "active"
-											? "bg-blue-500 shadow-[inset_0_0_0_1px_rgba(96,165,250,0.45)]"
-											: status === "success"
-												? "bg-emerald-500"
-												: status === "blocked"
-													? "bg-neutral-500/70"
-													: "bg-neutral-700/70",
+										"relative h-full overflow-visible bg-transparent",
 										"first:rounded-l-full last:rounded-r-full"
 									)}
 								>
 									{isActive ? (
-										<div className="pointer-events-none absolute inset-[-5px] rounded-full border border-blue-300/80 shadow-[0_0_0_1px_rgba(96,165,250,0.55),0_0_16px_rgba(59,130,246,0.6)] animate-pulse" />
+										<div className="pointer-events-none absolute inset-[-4px] z-0 rounded-full bg-sky-300/35 blur-md animate-pulse" />
 									) : null}
+									<div
+										className={cn(
+											"relative z-10 h-full w-full rounded-[inherit]",
+											barColor,
+											status === "active"
+												? "shadow-[inset_0_0_0_1px_rgba(96,165,250,0.45)]"
+												: ""
+										)}
+									/>
 								</div>
 							)
 						})}
