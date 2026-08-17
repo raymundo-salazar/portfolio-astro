@@ -81,7 +81,6 @@ const themeFallback = {
 const mergeTheme = (theme?: WizardConfig["theme"]) => ({ ...themeFallback, ...theme })
 const FOOTER_HEIGHT = 88
 const PROGRESS_HEIGHT = 7
-const ACTIVE_SEGMENT_HEIGHT = 12
 
 type SlideStatus = "active" | "success" | "pending" | "blocked"
 
@@ -492,7 +491,6 @@ export default function Wizard({
 					>
 						{allSlides.map(slide => {
 							const status = getSlideStatus(slide)
-							const isActive = status === "active"
 							const barColor =
 								status === "active"
 									? "bg-blue-500"
@@ -506,22 +504,13 @@ export default function Wizard({
 									key={slide.id}
 									className="relative h-full overflow-visible bg-transparent transition-all duration-300 ease-out"
 								>
-									{isActive ? (
-										<div
-											className="pointer-events-none absolute inset-x-0 z-0 bg-sky-300/45 transition-all duration-300 ease-out"
-											style={{
-												top: `-${ACTIVE_SEGMENT_HEIGHT - PROGRESS_HEIGHT}px`,
-												bottom: 0,
-											}}
-										/>
-									) : null}
 									<div
 										className={cn(
-											"relative z-10 h-full w-full transition-all duration-300 ease-out",
+											"relative z-10 w-full transition-all duration-300 ease-out",
 											barColor,
 											status === "active"
-												? "shadow-[inset_0_0_0_1px_rgba(96,165,250,0.45)]"
-												: ""
+												? "absolute inset-x-0 bottom-0 h-[12px] shadow-[inset_0_0_0_1px_rgba(96,165,250,0.45)]"
+												: "h-full"
 										)}
 									/>
 								</div>
