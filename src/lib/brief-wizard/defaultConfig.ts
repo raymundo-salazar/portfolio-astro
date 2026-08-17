@@ -20,17 +20,17 @@ export const briefWizardConfig: WizardConfig = {
 	slides: [
 		{
 			id: "welcome",
-			title: "Queremos conocer mejor tu visión",
+			subtitle: "01. CONOZCAMOS TU PROYECTO",
+			title: "Queremos entender lo que tienes en mente",
 			questions: [
 				{
 					id: "welcomeCopy",
 					type: "static",
 					content: `
-						<p>Gracias por tomarte el tiempo de compartir un poco más sobre tu proyecto.</p>
-						<p>Antes de definir una solución o preparar una propuesta, queremos entender mejor <strong>tu negocio, tus objetivos, tus clientes y lo que esperas lograr</strong>.</p>
-						<p>Este cuestionario nos ayudará a conocer el contexto, identificar tus prioridades y entender qué necesitas realmente para poder construir una propuesta adecuada para ti.</p>
-						<p><strong>No necesitas tener todo definido.</strong> Responde con el nivel de detalle que tengas hoy; si algo aún no está claro o no aplica a tu proyecto, puedes indicarlo sin problema.</p>
-						<p><small>Tiempo estimado: 10–15 minutos</small></p>
+						<p><strong>Gracias por permitirnos conocer un poco más sobre tu proyecto.</strong></p>
+						<p>Ahora queremos entender <strong>cómo lo imaginas, qué quieres lograr y qué es importante para ti</strong>. Tus respuestas nos ayudarán a conocer mejor tu negocio y a definir una propuesta que tenga sentido para tus objetivos.</p>
+						<p>No buscamos respuestas perfectas ni que tengas todo resuelto. <strong>Queremos conocer tus ideas, necesidades y prioridades</strong>, incluso aquellas que todavía estés explorando.</p>
+						<p>A partir de aquí, te iremos guiando con algunas preguntas sencillas.</p>
 					`,
 				},
 			],

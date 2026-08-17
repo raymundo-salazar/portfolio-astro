@@ -85,6 +85,22 @@ const ACTIVE_SEGMENT_HEIGHT = 12
 
 type SlideStatus = "active" | "success" | "pending" | "blocked"
 
+const ClockIcon = ({ className }: { className?: string }) => (
+	<svg
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		strokeWidth="2"
+		strokeLinecap="round"
+		strokeLinejoin="round"
+		aria-hidden="true"
+		className={className}
+	>
+		<circle cx="12" cy="12" r="9" />
+		<path d="M12 7v5l3 2" />
+	</svg>
+)
+
 const isFilesValue = (value: FieldValue): value is File[] | FileList =>
 	Array.isArray(value) || (typeof FileList !== "undefined" && value instanceof FileList)
 
@@ -220,6 +236,11 @@ export default function Wizard({
 		[currentSlide, answers]
 	)
 	const allSlides = normalizedConfig.slides
+	const currentStepErrors = useMemo(
+		() => (currentSlide ? getStepErrors(currentSlide, answers, customValidators) : {}),
+		[currentSlide, answers, customValidators]
+	)
+	const canAdvance = Object.keys(currentStepErrors).length === 0
 
 	useEffect(() => {
 		const nextAnswers = createInitialAnswers(normalizedConfig, initialAnswers)
@@ -385,6 +406,8 @@ export default function Wizard({
 		return slideVisibleIndex < currentVisibleIndex ? "success" : "pending"
 	}
 
+	const isWelcomeSlide = currentSlide.id === "welcome"
+
 	return (
 		<div ref={containerRef} className={cn(theme.root, className)}>
 			<header
@@ -444,6 +467,13 @@ export default function Wizard({
 									</div>
 								)
 							})}
+
+							{isWelcomeSlide ? (
+								<div className="flex items-center gap-2 text-sm text-gray-400">
+									<ClockIcon className="h-4 w-4 text-blue-300" />
+									<span>Tiempo estimado: 10–15 minutos</span>
+								</div>
+							) : null}
 						</StepSlide>
 					</div>
 				</div>
@@ -478,10 +508,10 @@ export default function Wizard({
 								>
 									{isActive ? (
 										<div
-											className="pointer-events-none absolute inset-x-0 z-0 bg-sky-300/45 transition-all duration-300 ease-out animate-pulse"
+											className="pointer-events-none absolute inset-x-0 z-0 bg-sky-300/45 transition-all duration-300 ease-out"
 											style={{
-												top: `-${(ACTIVE_SEGMENT_HEIGHT - PROGRESS_HEIGHT) / 2}px`,
-												bottom: `-${(ACTIVE_SEGMENT_HEIGHT - PROGRESS_HEIGHT) / 2}px`,
+												top: `-${ACTIVE_SEGMENT_HEIGHT - PROGRESS_HEIGHT}px`,
+												bottom: 0,
 											}}
 										/>
 									) : null}
@@ -509,6 +539,7 @@ export default function Wizard({
 					<button
 						type="button"
 						onClick={handleBack}
+						hidden={currentIndex === 0}
 						disabled={currentIndex === 0}
 						className={theme.buttonSecondary}
 					>
@@ -516,7 +547,12 @@ export default function Wizard({
 						{normalizedConfig.buttons?.previous ?? "Regresar"}
 					</button>
 
-					<button type="button" onClick={handleNext} className={theme.buttonPrimary}>
+					<button
+						type="button"
+						onClick={handleNext}
+						disabled={!canAdvance}
+						className={theme.buttonPrimary}
+					>
 						{currentIndex >= visibleSlides.length - 1
 							? (normalizedConfig.buttons?.finish ?? "Enviar brief")
 							: currentSlide.id === "welcome"
