@@ -524,17 +524,19 @@ export default function Wizard({
 				ref={footerRef}
 				className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-neutral-950/75 text-white shadow-[0_-8px_24px_rgba(0,0,0,0.22)] backdrop-blur-md"
 			>
-				<div className="mx-auto flex h-[88px] w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-					<button
-						type="button"
-						onClick={handleBack}
-						hidden={currentIndex === 0}
-						disabled={currentIndex === 0}
-						className={theme.buttonSecondary}
-					>
-						<FiArrowLeft className="h-4 w-4" />
-						{normalizedConfig.buttons?.previous ?? "Regresar"}
-					</button>
+				<div className="mx-auto grid h-[88px] w-full max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 sm:px-6 lg:px-8">
+					<div className="min-w-0">
+						{currentIndex === 0 ? null : (
+							<button
+								type="button"
+								onClick={handleBack}
+								className={theme.buttonSecondary}
+							>
+								<FiArrowLeft className="h-4 w-4" />
+								{normalizedConfig.buttons?.previous ?? "Regresar"}
+							</button>
+						)}
+					</div>
 
 					<button
 						type="button"
