@@ -23,16 +23,6 @@ export default function StepSlide({
 		<section className={cn("mx-auto w-full max-w-2xl", theme?.slideShell, className)}>
 			{title || subtitle || description ? (
 				<header className={cn("mb-8 space-y-3", theme?.slideHeader)}>
-					{title ? (
-						<h3
-							className={cn(
-								"text-3xl font-semibold tracking-tight text-white sm:text-4xl",
-								theme?.slideTitle
-							)}
-						>
-							{title}
-						</h3>
-					) : null}
 					{subtitle ? (
 						<p
 							className={cn(
@@ -42,6 +32,16 @@ export default function StepSlide({
 						>
 							{subtitle}
 						</p>
+					) : null}
+					{title ? (
+						<h3
+							className={cn(
+								"text-3xl font-semibold tracking-tight text-white sm:text-4xl",
+								theme?.slideTitle
+							)}
+						>
+							{title}
+						</h3>
 					) : null}
 					{description ? (
 						<p

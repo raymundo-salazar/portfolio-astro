@@ -159,6 +159,7 @@ export interface WizardChoiceQuestion extends WizardQuestionBase {
 	type: "select" | "radio" | "multiselect"
 	label: string
 	options: WizardOption[]
+	maxSelections?: number
 }
 
 export interface WizardCheckboxQuestion extends WizardQuestionBase {

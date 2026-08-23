@@ -84,6 +84,139 @@ const PROGRESS_HEIGHT = 7
 
 type SlideStatus = "active" | "success" | "pending" | "blocked"
 
+type WizardDraft = {
+	answers: WizardAnswerMap
+	currentSlideId: string | null
+}
+
+const WIZARD_STORAGE_KEY = "portfolio-astro:brief-wizard:v1"
+
+const getWizardStorage = () => {
+	if (typeof window === "undefined") return null
+
+	try {
+		return window.localStorage
+	} catch {
+		return null
+	}
+}
+
+const safeStringify = (value: unknown) => {
+	try {
+		return JSON.stringify(value)
+	} catch {
+		return "{}"
+	}
+}
+
+const sanitizeAnswerForStorage = (value: FieldValue) => {
+	if (value == null) return value
+	if (value instanceof File) return null
+	if (typeof FileList !== "undefined" && value instanceof FileList) return []
+	if (Array.isArray(value) && value.every(item => item instanceof File)) {
+		return []
+	}
+	if (Array.isArray(value)) return value
+	if (typeof value === "object" && "html" in value && "text" in value) {
+		return value
+	}
+	if (typeof value === "object") return null
+
+	return value
+}
+
+const serializeAnswerForSubmission = (value: FieldValue) => {
+	if (value == null) return value
+	if (value instanceof File) {
+		return {
+			name: value.name,
+			size: value.size,
+			type: value.type,
+		}
+	}
+	if (typeof FileList !== "undefined" && value instanceof FileList) {
+		return Array.from(value).map(file => ({
+			name: file.name,
+			size: file.size,
+			type: file.type,
+		}))
+	}
+	if (Array.isArray(value) && value.every(item => item instanceof File)) {
+		return value.map(file => ({
+			name: file.name,
+			size: file.size,
+			type: file.type,
+		}))
+	}
+	if (Array.isArray(value)) return value
+	if (typeof value === "object" && "html" in value && "text" in value) {
+		return value
+	}
+	if (typeof value === "object") return value
+
+	return value
+}
+
+const sanitizeAnswersForStorage = (answers: WizardAnswerMap) =>
+	Object.fromEntries(
+		Object.entries(answers).map(([key, value]) => [key, sanitizeAnswerForStorage(value)])
+	)
+
+const readWizardDraft = (): WizardDraft | null => {
+	const storage = getWizardStorage()
+	if (!storage) return null
+
+	try {
+		const raw = storage.getItem(WIZARD_STORAGE_KEY)
+		if (!raw) return null
+
+		const parsed = JSON.parse(raw) as Partial<WizardDraft>
+		if (!parsed || typeof parsed !== "object") return null
+
+		return {
+			answers: (parsed.answers ?? {}) as WizardAnswerMap,
+			currentSlideId:
+				typeof parsed.currentSlideId === "string" ? parsed.currentSlideId : null,
+		}
+	} catch {
+		return null
+	}
+}
+
+const saveWizardDraft = (draft: WizardDraft) => {
+	const storage = getWizardStorage()
+	if (!storage) return
+
+	try {
+		storage.setItem(
+			WIZARD_STORAGE_KEY,
+			safeStringify({
+				answers: sanitizeAnswersForStorage(draft.answers),
+				currentSlideId: draft.currentSlideId,
+			})
+		)
+	} catch {
+		// noop: persistence is best-effort only
+	}
+}
+
+const clearWizardDraft = () => {
+	const storage = getWizardStorage()
+	if (!storage) return
+
+	try {
+		storage.removeItem(WIZARD_STORAGE_KEY)
+	} catch {
+		// noop
+	}
+}
+
+const getFormspreeWizardEndpoint = () => {
+	const formspreeId = import.meta.env.FORMSPREE_WIZARD_ID ?? import.meta.env.FORMSPREE_ID
+
+	return formspreeId ? `https://formspree.io/f/${formspreeId}` : null
+}
+
 const ClockIcon = ({ className }: { className?: string }) => (
 	<svg
 		viewBox="0 0 24 24"
@@ -204,20 +337,32 @@ export default function Wizard({
 }: WizardProps) {
 	const normalizedConfig = useMemo(() => normalizeWizardConfig(config), [config])
 	const theme = useMemo(() => mergeTheme(normalizedConfig.theme), [normalizedConfig.theme])
+	const storedDraft = useMemo(() => readWizardDraft(), [])
 	const [answers, setAnswers] = useState<WizardAnswerMap>(() =>
-		createInitialAnswers(normalizedConfig, initialAnswers)
+		createInitialAnswers(normalizedConfig, {
+			...initialAnswers,
+			...storedDraft?.answers,
+		})
 	)
-	const [currentIndex, setCurrentIndex] = useState(() =>
-		Math.max(
-			getFirstVisibleSlideIndex(
-				normalizedConfig,
-				createInitialAnswers(normalizedConfig, initialAnswers)
-			),
-			0
-		)
-	)
+	const [currentIndex, setCurrentIndex] = useState(() => {
+		const mergedAnswers = createInitialAnswers(normalizedConfig, {
+			...initialAnswers,
+			...storedDraft?.answers,
+		})
+		const visibleSlides = getVisibleSlides(normalizedConfig.slides, mergedAnswers)
+		const storedSlideId = storedDraft?.currentSlideId
+
+		if (storedSlideId) {
+			const visibleIndex = visibleSlides.findIndex(slide => slide.id === storedSlideId)
+			if (visibleIndex >= 0) return visibleIndex
+		}
+
+		return Math.max(getFirstVisibleSlideIndex(normalizedConfig, mergedAnswers), 0)
+	})
 	const [errors, setErrors] = useState<Record<string, string>>({})
 	const [completed, setCompleted] = useState(false)
+	const [isSubmitting, setIsSubmitting] = useState(false)
+	const [submitError, setSubmitError] = useState<string | null>(null)
 	const containerRef = useRef<HTMLDivElement | null>(null)
 	const headerRef = useRef<HTMLElement | null>(null)
 	const footerRef = useRef<HTMLElement | null>(null)
@@ -242,12 +387,27 @@ export default function Wizard({
 	const canAdvance = Object.keys(currentStepErrors).length === 0
 
 	useEffect(() => {
-		const nextAnswers = createInitialAnswers(normalizedConfig, initialAnswers)
+		const nextAnswers = createInitialAnswers(normalizedConfig, {
+			...initialAnswers,
+			...storedDraft?.answers,
+		})
 		setAnswers(nextAnswers)
 		setErrors({})
 		setCompleted(false)
-		setCurrentIndex(Math.max(getFirstVisibleSlideIndex(normalizedConfig, nextAnswers), 0))
-	}, [normalizedConfig, initialAnswers])
+		setSubmitError(null)
+		const visibleSlides = getVisibleSlides(normalizedConfig.slides, nextAnswers)
+		const storedSlideId = storedDraft?.currentSlideId
+		const storedSlideIndex =
+			storedSlideId != null
+				? visibleSlides.findIndex(slide => slide.id === storedSlideId)
+				: -1
+
+		setCurrentIndex(
+			storedSlideIndex >= 0
+				? storedSlideIndex
+				: Math.max(getFirstVisibleSlideIndex(normalizedConfig, nextAnswers), 0)
+		)
+	}, [normalizedConfig, initialAnswers, storedDraft])
 
 	useEffect(() => {
 		if (!visibleSlides.length) return
@@ -272,6 +432,15 @@ export default function Wizard({
 			onStepChange?.(currentSlide, currentIndex)
 		}
 	}, [currentIndex, currentSlide, onStepChange])
+
+	useEffect(() => {
+		if (!currentSlide) return
+
+		saveWizardDraft({
+			answers,
+			currentSlideId: currentSlide.id,
+		})
+	}, [answers, currentSlide?.id])
 
 	useEffect(() => {
 		const scroller = mainRef.current
@@ -315,9 +484,54 @@ export default function Wizard({
 		target?.scrollIntoView({ behavior: "smooth", block: "center" })
 	}
 
+	const buildWizardSubmission = () => {
+		const visibleAnswers = Object.fromEntries(
+			Object.entries(answers)
+				.filter(([, value]) => value !== undefined)
+				.map(([key, value]) => [key, serializeAnswerForSubmission(value)])
+		)
+
+		return {
+			form: "wizard-brief",
+			submitted_at: new Date().toISOString(),
+			current_slide: currentSlide?.id ?? null,
+			answers: visibleAnswers,
+		}
+	}
+
 	const runFinalSubmit = async () => {
-		setCompleted(true)
-		await Promise.resolve(onSubmit?.(answers) ?? onComplete?.(answers))
+		setIsSubmitting(true)
+		setSubmitError(null)
+
+		try {
+			const endpoint = getFormspreeWizardEndpoint()
+			if (!endpoint) {
+				throw new Error("Falta configurar FORMSPREE_WIZARD_ID.")
+			}
+
+			const response = await fetch(endpoint, {
+				method: "POST",
+				headers: {
+					Accept: "application/json",
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(buildWizardSubmission()),
+			})
+
+			if (!response.ok) {
+				throw new Error("No se pudo enviar el brief.")
+			}
+
+			clearWizardDraft()
+			setCompleted(true)
+			await Promise.resolve(onSubmit?.(answers) ?? onComplete?.(answers))
+		} catch (error) {
+			setSubmitError(
+				error instanceof Error ? error.message : "Ocurrió un error al enviar el brief."
+			)
+		} finally {
+			setIsSubmitting(false)
+		}
 	}
 
 	const handleNext = () => {
@@ -474,6 +688,12 @@ export default function Wizard({
 								</div>
 							) : null}
 						</StepSlide>
+
+						{submitError ? (
+							<p className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+								{submitError}
+							</p>
+						) : null}
 					</div>
 				</div>
 			</main>
@@ -541,14 +761,16 @@ export default function Wizard({
 					<button
 						type="button"
 						onClick={handleNext}
-						disabled={!canAdvance}
+						disabled={!canAdvance || isSubmitting}
 						className={theme.buttonPrimary}
 					>
-						{currentIndex >= visibleSlides.length - 1
-							? (normalizedConfig.buttons?.finish ?? "Enviar brief")
-							: currentSlide.id === "welcome"
-								? "Comenzar"
-								: (normalizedConfig.buttons?.next ?? "Continuar")}
+						{isSubmitting
+							? "Enviando..."
+							: currentIndex >= visibleSlides.length - 1
+								? (normalizedConfig.buttons?.finish ?? "Enviar brief")
+								: currentSlide.id === "welcome"
+									? "Comenzar"
+									: (normalizedConfig.buttons?.next ?? "Continuar")}
 						<FiArrowRight className="h-4 w-4" />
 					</button>
 				</div>

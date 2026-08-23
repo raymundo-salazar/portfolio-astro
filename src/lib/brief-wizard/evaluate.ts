@@ -239,6 +239,17 @@ export const evaluateValidation = (
 
 	if (!isEmptyValue(value)) {
 		const textValue = getFieldValueText(value)
+		const selectedCount = Array.isArray(value) ? value.length : 0
+
+		if ("maxSelections" in question && typeof question.maxSelections === "number") {
+			if (selectedCount > question.maxSelections) {
+				errors.push(
+					question.label
+						? `${question.label}: selecciona como máximo ${question.maxSelections} opciones.`
+						: `Selecciona como máximo ${question.maxSelections} opciones.`
+				)
+			}
+		}
 
 		for (const rule of validations) {
 			if (!passesValidationCondition(rule, answers)) {
