@@ -70,11 +70,11 @@ const themeFallback = {
 	checkbox: "",
 	toolbar: "",
 	buttonPrimary:
-		"inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-40",
+		"inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-blue-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-40",
 	buttonSecondary:
-		"inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40",
+		"inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40",
 	buttonGhost:
-		"inline-flex items-center justify-center gap-2 rounded-2xl border border-dashed border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-gray-200 transition hover:border-blue-400/40 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40",
+		"inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-dashed border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-gray-200 transition hover:border-blue-400/40 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40",
 	successShell: "rounded-[2rem] border border-emerald-400/30 bg-emerald-500/10 p-8 text-center",
 }
 
@@ -682,9 +682,15 @@ export default function Wizard({
 							})}
 
 							{isWelcomeSlide ? (
-								<div className="flex items-center gap-2 text-sm text-gray-400">
-									<ClockIcon className="h-4 w-4 text-blue-300" />
-									<span>Tiempo estimado: 10–15 minutos</span>
+								<div className="space-y-2 text-sm text-gray-400">
+									<div className="flex items-center gap-2">
+										<ClockIcon className="h-4 w-4 text-blue-300" />
+										<span>Tiempo estimado: 10–15 minutos</span>
+									</div>
+									<p className="text-xs leading-5 text-gray-500">
+										No se perderá tu progreso si cierras la pestaña o decides
+										pausar y continuar después.
+									</p>
 								</div>
 							) : null}
 						</StepSlide>

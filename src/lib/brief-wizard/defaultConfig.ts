@@ -32,18 +32,6 @@ export const briefWizardConfig: WizardConfig = {
 						<p>A partir de aqui, te iremos guiando con algunas preguntas sencillas.</p>
 					`,
 				},
-				{
-					id: "welcome_confirm_intent",
-					type: "radio",
-					label: "Antes de empezar, confirma que este formulario sera respondido con el mayor contexto posible.",
-					description:
-						"No necesitamos respuestas perfectas. Buscamos entender el negocio para preparar una propuesta mejor enfocada.",
-					required: true,
-					options: [
-						{ label: "Si, estoy listo para responder", value: "yes" },
-						{ label: "Prefiero responderlo despues", value: "later" },
-					],
-				},
 			],
 		},
 		{
