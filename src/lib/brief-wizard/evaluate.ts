@@ -172,7 +172,7 @@ export const getFieldValueText = (value: FieldValue) => {
 }
 
 const getErrorMessage = (question: WizardQuestion, fallback: string) =>
-	question.label ? `${question.label}: ${fallback}` : fallback
+	"label" in question && question.label ? `${question.label}: ${fallback}` : fallback
 
 const passesValidationCondition = (rule: ValidationRule, answers: WizardAnswerMap) =>
 	!("when" in rule) || evaluateVisibilityCondition(rule.when, answers)

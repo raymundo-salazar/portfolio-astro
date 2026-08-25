@@ -1,6 +1,7 @@
 import type { WizardConfig } from "./types"
 
 export const briefWizardConfig: WizardConfig = {
+	id: "brief-base",
 	eyebrow: "Brief para prospectos",
 	title: "Cuentame que necesitas y armamos el brief correcto",
 	subtitle: "Formulario guia para entender el proyecto",
@@ -246,6 +247,36 @@ export const briefWizardConfig: WizardConfig = {
 						{ label: "Poder medir resultados", value: "measurement" },
 						{ label: "Lanzar rapido una primera version", value: "speed" },
 						{ label: "Construir algo solido y escalable", value: "quality" },
+					],
+				},
+			],
+		},
+		{
+			id: "insurance_focus",
+			title: "Cobertura de seguros",
+			subtitle: "Seguros",
+			description:
+				"Como este brief es para una empresa de seguros, queremos entender qué líneas conviene priorizar primero.",
+			visibleWhen: {
+				questionId: "business_context_category",
+				operator: "equals",
+				value: "finance",
+			},
+			questions: [
+				{
+					id: "insurance_priority_lines",
+					type: "multiselect",
+					label: "Qué líneas de seguro quieren impulsar primero?",
+					required: true,
+					maxSelections: 5,
+					options: [
+						{ label: "Seguro de vida", value: "life" },
+						{ label: "Gastos médicos mayores", value: "medical_expenses" },
+						{ label: "Retiro / ahorro", value: "retirement_savings" },
+						{ label: "Protección familiar", value: "family_protection" },
+						{ label: "Seguros para empresas", value: "business_insurance" },
+						{ label: "Hombre clave / socios", value: "key_person_partners" },
+						{ label: "No lo tenemos claro", value: "not_sure" },
 					],
 				},
 			],

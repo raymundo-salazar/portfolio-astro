@@ -47,7 +47,7 @@ export default function ChoiceField({ question, value, error, onChange, theme }:
 					</option>
 					{question.options.map(option => (
 						<option
-							key={option.value}
+							key={String(option.value)}
 							value={String(option.value)}
 							className="bg-neutral-900 text-white"
 						>
@@ -61,7 +61,7 @@ export default function ChoiceField({ question, value, error, onChange, theme }:
 						const checked = normalized.includes(String(option.value))
 						return (
 							<label
-								key={option.value}
+								key={String(option.value)}
 								className={cn(
 									"flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-gray-200 transition-all hover:border-blue-400/40 hover:bg-white/10",
 									checked ? "border-blue-400/70 bg-blue-500/10 text-white" : "",
@@ -101,7 +101,7 @@ export default function ChoiceField({ question, value, error, onChange, theme }:
 						const checked = normalized.includes(String(option.value))
 						return (
 							<label
-								key={option.value}
+								key={String(option.value)}
 								className={cn(
 									"flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-gray-200 transition-all hover:border-blue-400/40 hover:bg-white/10",
 									checked ? "border-blue-400/70 bg-blue-500/10 text-white" : "",

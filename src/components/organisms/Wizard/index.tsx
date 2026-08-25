@@ -89,7 +89,8 @@ type WizardDraft = {
 	currentSlideId: string | null
 }
 
-const WIZARD_STORAGE_KEY = "portfolio-astro:brief-wizard:v1"
+const getWizardStorageKey = (wizardId?: string) =>
+	`portfolio-astro:brief-wizard:v1:${wizardId ?? "default"}`
 
 const getWizardStorage = () => {
 	if (typeof window === "undefined") return null
@@ -162,12 +163,12 @@ const sanitizeAnswersForStorage = (answers: WizardAnswerMap) =>
 		Object.entries(answers).map(([key, value]) => [key, sanitizeAnswerForStorage(value)])
 	)
 
-const readWizardDraft = (): WizardDraft | null => {
+const readWizardDraft = (storageKey: string): WizardDraft | null => {
 	const storage = getWizardStorage()
 	if (!storage) return null
 
 	try {
-		const raw = storage.getItem(WIZARD_STORAGE_KEY)
+		const raw = storage.getItem(storageKey)
 		if (!raw) return null
 
 		const parsed = JSON.parse(raw) as Partial<WizardDraft>
@@ -183,13 +184,13 @@ const readWizardDraft = (): WizardDraft | null => {
 	}
 }
 
-const saveWizardDraft = (draft: WizardDraft) => {
+const saveWizardDraft = (storageKey: string, draft: WizardDraft) => {
 	const storage = getWizardStorage()
 	if (!storage) return
 
 	try {
 		storage.setItem(
-			WIZARD_STORAGE_KEY,
+			storageKey,
 			safeStringify({
 				answers: sanitizeAnswersForStorage(draft.answers),
 				currentSlideId: draft.currentSlideId,
@@ -200,12 +201,12 @@ const saveWizardDraft = (draft: WizardDraft) => {
 	}
 }
 
-const clearWizardDraft = () => {
+const clearWizardDraft = (storageKey: string) => {
 	const storage = getWizardStorage()
 	if (!storage) return
 
 	try {
-		storage.removeItem(WIZARD_STORAGE_KEY)
+		storage.removeItem(storageKey)
 	} catch {
 		// noop
 	}
@@ -289,7 +290,12 @@ const renderQuestion = (
 			return (
 				<ChoiceField
 					question={question}
-					value={typeof value === "string" || Array.isArray(value) ? value : undefined}
+					value={
+						typeof value === "string" ||
+						(Array.isArray(value) && value.every(item => typeof item === "string"))
+							? value
+							: undefined
+					}
 					error={error}
 					onChange={setValue as (next: string | string[]) => void}
 					theme={theme}
@@ -337,7 +343,11 @@ export default function Wizard({
 }: WizardProps) {
 	const normalizedConfig = useMemo(() => normalizeWizardConfig(config), [config])
 	const theme = useMemo(() => mergeTheme(normalizedConfig.theme), [normalizedConfig.theme])
-	const storedDraft = useMemo(() => readWizardDraft(), [])
+	const wizardStorageKey = useMemo(
+		() => getWizardStorageKey(normalizedConfig.id),
+		[normalizedConfig.id]
+	)
+	const storedDraft = useMemo(() => readWizardDraft(wizardStorageKey), [wizardStorageKey])
 	const [answers, setAnswers] = useState<WizardAnswerMap>(() =>
 		createInitialAnswers(normalizedConfig, {
 			...initialAnswers,
@@ -436,11 +446,11 @@ export default function Wizard({
 	useEffect(() => {
 		if (!currentSlide) return
 
-		saveWizardDraft({
+		saveWizardDraft(wizardStorageKey, {
 			answers,
 			currentSlideId: currentSlide.id,
 		})
-	}, [answers, currentSlide?.id])
+	}, [answers, currentSlide?.id, wizardStorageKey])
 
 	useEffect(() => {
 		const scroller = mainRef.current
@@ -522,7 +532,7 @@ export default function Wizard({
 				throw new Error("No se pudo enviar el brief.")
 			}
 
-			clearWizardDraft()
+			clearWizardDraft(wizardStorageKey)
 			setCompleted(true)
 			await Promise.resolve(onSubmit?.(answers) ?? onComplete?.(answers))
 		} catch (error) {

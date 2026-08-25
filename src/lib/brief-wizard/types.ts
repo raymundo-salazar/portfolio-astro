@@ -127,6 +127,7 @@ export interface WizardQuestionBase {
 	helperText?: string
 	description?: string
 	placeholder?: string
+	defaultValue?: FieldValue
 	required?: boolean | VisibilityCondition
 	visibleWhen?: VisibilityCondition
 	validations?: ValidationRule[]
