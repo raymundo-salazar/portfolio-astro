@@ -30,10 +30,10 @@ const successPath = `${clientPath}/success`
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>{profile.title ?? "Brief"} - Raymundo Salazar</title>
+		<title>{profile.title ?? "Brief"} - Enviado</title>
 		<meta
 			name="description"
-			content={profile.description ?? "Brief personalizado para cliente."}
+			content={profile.description ?? "Brief personalizado enviado correctamente."}
 		/>
 		<meta name="robots" content="noindex, nofollow" />
 	</head>
@@ -43,7 +43,7 @@ const successPath = `${clientPath}/success`
 			config={wizardConfig}
 			clientPath={clientPath}
 			successPath={successPath}
-			mode="wizard"
+			mode="success"
 		/>
 	</body>
 </html>

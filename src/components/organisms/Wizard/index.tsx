@@ -14,11 +14,19 @@ import {
 	getFieldValueText,
 	getFirstVisibleSlideIndex,
 	getStepErrors,
+	getWizardErrors,
 	isSlideVisible,
 	getVisibleQuestions,
 	getVisibleSlides,
 	normalizeWizardConfig,
 } from "@/lib/brief-wizard/evaluate"
+import {
+	clearWizardDraft,
+	getWizardStorageKey,
+	markWizardSubmitted,
+	readWizardDraft,
+	saveWizardDraft,
+} from "@/lib/brief-wizard/storage"
 import type {
 	FieldValue,
 	WizardAnswerMap,
@@ -27,13 +35,14 @@ import type {
 	WizardQuestion,
 	WizardSlide,
 } from "@/lib/brief-wizard/types"
-import { FiArrowLeft, FiArrowRight, FiCheckCircle } from "react-icons/fi"
+import { FiArrowLeft, FiArrowRight } from "react-icons/fi"
 
 import StepSlide from "./StepSlide"
 
 export type WizardProps = {
 	config: WizardConfig
 	initialAnswers?: WizardAnswerMap
+	successPath?: string
 	onComplete?: (answers: WizardAnswerMap) => void | Promise<void>
 	onSubmit?: (answers: WizardAnswerMap) => void | Promise<void>
 	onChange?: (answers: WizardAnswerMap) => void
@@ -84,48 +93,6 @@ const PROGRESS_HEIGHT = 7
 
 type SlideStatus = "active" | "success" | "pending" | "blocked"
 
-type WizardDraft = {
-	answers: WizardAnswerMap
-	currentSlideId: string | null
-}
-
-const getWizardStorageKey = (wizardId?: string) =>
-	`portfolio-astro:brief-wizard:v1:${wizardId ?? "default"}`
-
-const getWizardStorage = () => {
-	if (typeof window === "undefined") return null
-
-	try {
-		return window.localStorage
-	} catch {
-		return null
-	}
-}
-
-const safeStringify = (value: unknown) => {
-	try {
-		return JSON.stringify(value)
-	} catch {
-		return "{}"
-	}
-}
-
-const sanitizeAnswerForStorage = (value: FieldValue) => {
-	if (value == null) return value
-	if (value instanceof File) return null
-	if (typeof FileList !== "undefined" && value instanceof FileList) return []
-	if (Array.isArray(value) && value.every(item => item instanceof File)) {
-		return []
-	}
-	if (Array.isArray(value)) return value
-	if (typeof value === "object" && "html" in value && "text" in value) {
-		return value
-	}
-	if (typeof value === "object") return null
-
-	return value
-}
-
 const serializeAnswerForSubmission = (value: FieldValue) => {
 	if (value == null) return value
 	if (value instanceof File) {
@@ -158,58 +125,36 @@ const serializeAnswerForSubmission = (value: FieldValue) => {
 	return value
 }
 
-const sanitizeAnswersForStorage = (answers: WizardAnswerMap) =>
-	Object.fromEntries(
-		Object.entries(answers).map(([key, value]) => [key, sanitizeAnswerForStorage(value)])
-	)
+const isMeaningfulStoredAnswer = (value: FieldValue) => {
+	if (value == null) return false
+	if (typeof value === "string") return value.trim().length > 0
+	if (typeof value === "number") return !Number.isNaN(value)
+	if (typeof value === "boolean") return true
+	if (Array.isArray(value)) return value.length > 0
+	if (typeof FileList !== "undefined" && value instanceof FileList) return value.length > 0
+	if (value instanceof File) return true
+	if (typeof value === "object" && "html" in value && "text" in value) {
+		return Boolean(value.text.trim() || value.html.trim())
+	}
+	if (typeof value === "object") return Object.keys(value).length > 0
 
-const readWizardDraft = (storageKey: string): WizardDraft | null => {
-	const storage = getWizardStorage()
-	if (!storage) return null
+	return false
+}
 
-	try {
-		const raw = storage.getItem(storageKey)
-		if (!raw) return null
+const mergeInitialAnswersWithDraft = (
+	config: WizardConfig,
+	initialAnswers: WizardAnswerMap = {},
+	storedAnswers?: WizardAnswerMap
+) => {
+	const mergedAnswers: WizardAnswerMap = { ...initialAnswers }
 
-		const parsed = JSON.parse(raw) as Partial<WizardDraft>
-		if (!parsed || typeof parsed !== "object") return null
-
-		return {
-			answers: (parsed.answers ?? {}) as WizardAnswerMap,
-			currentSlideId:
-				typeof parsed.currentSlideId === "string" ? parsed.currentSlideId : null,
+	for (const [questionId, storedValue] of Object.entries(storedAnswers ?? {})) {
+		if (isMeaningfulStoredAnswer(storedValue)) {
+			mergedAnswers[questionId] = storedValue
 		}
-	} catch {
-		return null
 	}
-}
 
-const saveWizardDraft = (storageKey: string, draft: WizardDraft) => {
-	const storage = getWizardStorage()
-	if (!storage) return
-
-	try {
-		storage.setItem(
-			storageKey,
-			safeStringify({
-				answers: sanitizeAnswersForStorage(draft.answers),
-				currentSlideId: draft.currentSlideId,
-			})
-		)
-	} catch {
-		// noop: persistence is best-effort only
-	}
-}
-
-const clearWizardDraft = (storageKey: string) => {
-	const storage = getWizardStorage()
-	if (!storage) return
-
-	try {
-		storage.removeItem(storageKey)
-	} catch {
-		// noop
-	}
+	return createInitialAnswers(config, mergedAnswers)
 }
 
 const getFormspreeWizardEndpoint = () => {
@@ -334,6 +279,7 @@ const renderQuestion = (
 export default function Wizard({
 	config,
 	initialAnswers,
+	successPath,
 	onComplete,
 	onSubmit,
 	onChange,
@@ -349,16 +295,14 @@ export default function Wizard({
 	)
 	const storedDraft = useMemo(() => readWizardDraft(wizardStorageKey), [wizardStorageKey])
 	const [answers, setAnswers] = useState<WizardAnswerMap>(() =>
-		createInitialAnswers(normalizedConfig, {
-			...initialAnswers,
-			...storedDraft?.answers,
-		})
+		mergeInitialAnswersWithDraft(normalizedConfig, initialAnswers, storedDraft?.answers)
 	)
 	const [currentIndex, setCurrentIndex] = useState(() => {
-		const mergedAnswers = createInitialAnswers(normalizedConfig, {
-			...initialAnswers,
-			...storedDraft?.answers,
-		})
+		const mergedAnswers = mergeInitialAnswersWithDraft(
+			normalizedConfig,
+			initialAnswers,
+			storedDraft?.answers
+		)
 		const visibleSlides = getVisibleSlides(normalizedConfig.slides, mergedAnswers)
 		const storedSlideId = storedDraft?.currentSlideId
 
@@ -370,8 +314,18 @@ export default function Wizard({
 		return Math.max(getFirstVisibleSlideIndex(normalizedConfig, mergedAnswers), 0)
 	})
 	const [errors, setErrors] = useState<Record<string, string>>({})
-	const [completed, setCompleted] = useState(false)
-	const [isSubmitting, setIsSubmitting] = useState(false)
+	const [screen, setScreen] = useState<"wizard" | "review" | "submitting" | "error">(() =>
+		storedDraft?.screen === "review" ? "review" : "wizard"
+	)
+	const [selectedQuestionId, setSelectedQuestionId] = useState<string | null>(
+		() => storedDraft?.selectedQuestionId ?? null
+	)
+	const [editingQuestionId, setEditingQuestionId] = useState<string | null>(
+		() => storedDraft?.selectedQuestionId ?? null
+	)
+	const [reviewReturnIndex, setReviewReturnIndex] = useState(() =>
+		Math.max(getFirstVisibleSlideIndex(normalizedConfig, answers), 0)
+	)
 	const [submitError, setSubmitError] = useState<string | null>(null)
 	const containerRef = useRef<HTMLDivElement | null>(null)
 	const headerRef = useRef<HTMLElement | null>(null)
@@ -397,13 +351,16 @@ export default function Wizard({
 	const canAdvance = Object.keys(currentStepErrors).length === 0
 
 	useEffect(() => {
-		const nextAnswers = createInitialAnswers(normalizedConfig, {
-			...initialAnswers,
-			...storedDraft?.answers,
-		})
+		const nextAnswers = mergeInitialAnswersWithDraft(
+			normalizedConfig,
+			initialAnswers,
+			storedDraft?.answers
+		)
 		setAnswers(nextAnswers)
 		setErrors({})
-		setCompleted(false)
+		setScreen(storedDraft?.screen === "review" ? "review" : "wizard")
+		setSelectedQuestionId(storedDraft?.selectedQuestionId ?? null)
+		setEditingQuestionId(storedDraft?.selectedQuestionId ?? null)
 		setSubmitError(null)
 		const visibleSlides = getVisibleSlides(normalizedConfig.slides, nextAnswers)
 		const storedSlideId = storedDraft?.currentSlideId
@@ -417,6 +374,7 @@ export default function Wizard({
 				? storedSlideIndex
 				: Math.max(getFirstVisibleSlideIndex(normalizedConfig, nextAnswers), 0)
 		)
+		setReviewReturnIndex(Math.max(getFirstVisibleSlideIndex(normalizedConfig, nextAnswers), 0))
 	}, [normalizedConfig, initialAnswers, storedDraft])
 
 	useEffect(() => {
@@ -445,12 +403,34 @@ export default function Wizard({
 
 	useEffect(() => {
 		if (!currentSlide) return
+		if (screen === "submitting") return
 
 		saveWizardDraft(wizardStorageKey, {
 			answers,
 			currentSlideId: currentSlide.id,
+			screen: screen === "review" ? "review" : "wizard",
+			selectedQuestionId,
 		})
-	}, [answers, currentSlide?.id, wizardStorageKey])
+	}, [answers, currentSlide?.id, screen, selectedQuestionId, wizardStorageKey])
+
+	useEffect(() => {
+		if (screen !== "wizard" || !selectedQuestionId) return
+
+		const target = containerRef.current?.querySelector<HTMLElement>(
+			`[data-question-id="${selectedQuestionId}"]`
+		)
+		if (!target) return
+
+		const frame = requestAnimationFrame(() => {
+			target.scrollIntoView({ behavior: "smooth", block: "center" })
+			const focusable = target.querySelector<HTMLElement>(
+				"input, textarea, select, button, [contenteditable='true']"
+			)
+			focusable?.focus?.()
+		})
+
+		return () => window.cancelAnimationFrame(frame)
+	}, [currentSlide?.id, screen, selectedQuestionId])
 
 	useEffect(() => {
 		const scroller = mainRef.current
@@ -510,8 +490,23 @@ export default function Wizard({
 	}
 
 	const runFinalSubmit = async () => {
-		setIsSubmitting(true)
 		setSubmitError(null)
+
+		const wizardErrors = getWizardErrors(normalizedConfig, answers, customValidators)
+		if (Object.keys(wizardErrors).length > 0) {
+			const firstErrorId = Object.keys(wizardErrors)[0]
+			const slideIndex = visibleSlides.findIndex(slide =>
+				slide.questions.some(question => question.id === firstErrorId)
+			)
+			setCurrentIndex(Math.max(slideIndex, 0))
+			setSelectedQuestionId(firstErrorId ?? null)
+			setEditingQuestionId(firstErrorId ?? null)
+			setScreen("wizard")
+			setSubmitError("Hay campos pendientes por completar antes de enviar.")
+			return
+		}
+
+		setScreen("submitting")
 
 		try {
 			const endpoint = getFormspreeWizardEndpoint()
@@ -533,14 +528,19 @@ export default function Wizard({
 			}
 
 			clearWizardDraft(wizardStorageKey)
-			setCompleted(true)
+			markWizardSubmitted(normalizedConfig.id)
 			await Promise.resolve(onSubmit?.(answers) ?? onComplete?.(answers))
+			if (successPath) {
+				window.location.assign(successPath)
+				return
+			}
+			setScreen("review")
 		} catch (error) {
 			setSubmitError(
 				error instanceof Error ? error.message : "Ocurrió un error al enviar el brief."
 			)
-		} finally {
-			setIsSubmitting(false)
+			setScreen("error")
+			return
 		}
 	}
 
@@ -554,8 +554,17 @@ export default function Wizard({
 			return
 		}
 
-		if (currentIndex >= visibleSlides.length - 1) {
-			void runFinalSubmit()
+		if (editingQuestionId) {
+			setEditingQuestionId(null)
+			setSelectedQuestionId(null)
+			setCurrentIndex(reviewReturnIndex)
+			setScreen("review")
+			return
+		}
+
+		if (screen === "wizard" && currentIndex >= visibleSlides.length - 1) {
+			setReviewReturnIndex(currentIndex)
+			setScreen("review")
 			return
 		}
 
@@ -563,39 +572,92 @@ export default function Wizard({
 	}
 
 	const handleBack = () => setCurrentIndex(index => Math.max(index - 1, 0))
+	const startEditingQuestion = (questionId: string) => {
+		const slideIndex = visibleSlides.findIndex(slide =>
+			slide.questions.some(question => question.id === questionId)
+		)
+		if (slideIndex < 0) return
 
-	if (completed) {
-		return (
-			<div className={cn(theme.root, className)}>
-				<div className={theme.panel}>
-					<div className={theme.successShell}>
-						<FiCheckCircle className="mx-auto mb-4 h-12 w-12 text-emerald-300" />
-						<h2 className="text-3xl font-semibold text-white">
-							{normalizedConfig.title}
-						</h2>
-						<p className="mt-3 text-base text-emerald-100/90">
-							Gracias. El brief quedó completo y listo para enviarse.
-						</p>
-						<div className="mt-6 grid gap-3 text-left sm:grid-cols-2">
-							{Object.entries(answers).map(([key, value]) => (
-								<div
-									key={key}
-									className="rounded-2xl border border-white/10 bg-neutral-950/40 p-4"
-								>
-									<p className="text-xs uppercase tracking-[0.24em] text-emerald-200">
-										{key}
-									</p>
-									<p className="mt-2 text-sm text-white">
-										{getFieldValueText(value)}
-									</p>
-								</div>
-							))}
-						</div>
+		setReviewReturnIndex(slideIndex)
+		setSelectedQuestionId(questionId)
+		setEditingQuestionId(questionId)
+		setScreen("wizard")
+		setCurrentIndex(slideIndex)
+	}
+
+	const resumeReview = () => {
+		setScreen("wizard")
+		setSelectedQuestionId(null)
+		setEditingQuestionId(null)
+		setCurrentIndex(Math.max(reviewReturnIndex, 0))
+	}
+
+	const summarySlides = visibleSlides
+		.map(slide => ({
+			slide,
+			questions: getVisibleQuestions(slide, answers).filter(
+				question =>
+					question.type !== "static" &&
+					question.type !== "title" &&
+					question.type !== "subtitle"
+			),
+		}))
+		.filter(entry => entry.questions.length > 0)
+
+	const renderLoadingScreen = () => (
+		<div className={cn(theme.root, className)}>
+			<div className={theme.panel}>
+				<div className="mx-auto w-full max-w-2xl rounded-[2rem] border border-white/10 bg-white/5 p-8 text-center shadow-2xl shadow-black/30 backdrop-blur-xl sm:p-10">
+					<div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5">
+						<div className="h-6 w-6 animate-spin rounded-full border-2 border-white/20 border-t-[#FF6719]" />
+					</div>
+					<h2 className="mt-5 text-3xl font-semibold tracking-tight text-white">
+						Estamos enviando tu brief
+					</h2>
+					<p className="mt-3 text-sm leading-7 text-gray-300 sm:text-base">
+						Estamos preparando el envío final. No cierres esta ventana.
+					</p>
+				</div>
+			</div>
+		</div>
+	)
+
+	const renderErrorScreen = () => (
+		<div className={cn(theme.root, className)}>
+			<div className={theme.panel}>
+				<div className="mx-auto w-full max-w-2xl rounded-[2rem] border border-red-400/20 bg-red-500/10 p-8 shadow-2xl shadow-black/30 backdrop-blur-xl sm:p-10">
+					<p className="text-xs font-semibold uppercase tracking-[0.32em] text-red-200">
+						Error al enviar
+					</p>
+					<h2 className="mt-5 text-3xl font-semibold tracking-tight text-white">
+						No se pudo completar el envío
+					</h2>
+					<p className="mt-3 text-sm leading-7 text-red-50/90 sm:text-base">
+						{submitError ?? "Hubo un problema temporal. Puede intentar de nuevo."}
+					</p>
+					<div className="mt-8 flex flex-col gap-3 sm:flex-row">
+						<button
+							type="button"
+							onClick={() => {
+								setSubmitError(null)
+								setScreen("review")
+							}}
+							className={theme.buttonSecondary}
+						>
+							Volver al resumen
+						</button>
+						<button
+							type="button"
+							onClick={() => void runFinalSubmit()}
+							className={theme.buttonPrimary}
+						>
+							Reintentar envío
+						</button>
 					</div>
 				</div>
 			</div>
-		)
-	}
+		</div>
+	)
 
 	if (!visibleSlides.length) {
 		return (
@@ -609,6 +671,14 @@ export default function Wizard({
 		)
 	}
 
+	if (screen === "submitting") {
+		return renderLoadingScreen()
+	}
+
+	if (screen === "error") {
+		return renderErrorScreen()
+	}
+
 	const currentErrors = Object.fromEntries(
 		Object.entries(errors).filter(([key]) =>
 			visibleQuestions.some(question => question.id === key)
@@ -616,8 +686,13 @@ export default function Wizard({
 	)
 	const currentVisibleIndex = visibleSlides.findIndex(item => item.id === currentSlide.id)
 	const currentOriginalIndex = allSlides.findIndex(item => item.id === currentSlide.id)
+	const isReviewMode = screen === "review"
 
 	const getSlideStatus = (slide: WizardSlide): SlideStatus => {
+		if (isReviewMode) {
+			return isSlideVisible(slide, answers) ? "success" : "blocked"
+		}
+
 		const slideOriginalIndex = allSlides.findIndex(item => item.id === slide.id)
 		if (!isSlideVisible(slide, answers)) {
 			return slideOriginalIndex < currentOriginalIndex ? "blocked" : "pending"
@@ -631,7 +706,7 @@ export default function Wizard({
 
 	const isWelcomeSlide = currentSlide.id === "welcome"
 
-	return (
+	const renderWizardView = () => (
 		<div ref={containerRef} className={cn(theme.root, className)}>
 			<header
 				ref={headerRef}
@@ -677,9 +752,24 @@ export default function Wizard({
 							{visibleQuestions.map(question => {
 								const value = answers[question.id] ?? getDefaultValue(question)
 								const error = currentErrors[question.id] ?? null
+								const isSelected = selectedQuestionId === question.id
 
 								return (
-									<div key={question.id} data-question-id={question.id}>
+									<div
+										key={question.id}
+										data-question-id={question.id}
+										className={cn(
+											"rounded-[1.75rem] border border-transparent p-1 transition-all duration-300",
+											isSelected
+												? "border-[#FF671955] bg-[#FF67190f] shadow-[0_0_0_1px_rgba(255,103,25,0.18)]"
+												: ""
+										)}
+									>
+										{isSelected ? (
+											<p className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-[#FFB38A]">
+												Editando esta respuesta
+											</p>
+										) : null}
 										{renderQuestion(
 											question,
 											value,
@@ -704,12 +794,6 @@ export default function Wizard({
 								</div>
 							) : null}
 						</StepSlide>
-
-						{submitError ? (
-							<p className="mt-4 rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-100">
-								{submitError}
-							</p>
-						) : null}
 					</div>
 				</div>
 			</main>
@@ -762,7 +846,16 @@ export default function Wizard({
 			>
 				<div className="mx-auto grid h-[88px] w-full max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 sm:px-6 lg:px-8">
 					<div className="min-w-0">
-						{currentIndex === 0 ? null : (
+						{screen === "review" ? (
+							<button
+								type="button"
+								onClick={resumeReview}
+								className={theme.buttonSecondary}
+							>
+								<FiArrowLeft className="h-4 w-4" />
+								Seguir editando
+							</button>
+						) : currentIndex === 0 ? null : (
 							<button
 								type="button"
 								onClick={handleBack}
@@ -777,20 +870,177 @@ export default function Wizard({
 					<button
 						type="button"
 						onClick={handleNext}
-						disabled={!canAdvance || isSubmitting}
+						disabled={screen === "submitting" || !canAdvance}
 						className={theme.buttonPrimary}
 					>
-						{isSubmitting
-							? "Enviando..."
-							: currentIndex >= visibleSlides.length - 1
-								? (normalizedConfig.buttons?.finish ?? "Enviar brief")
-								: currentSlide.id === "welcome"
-									? "Comenzar"
-									: (normalizedConfig.buttons?.next ?? "Continuar")}
+						{screen === "review"
+							? "Enviar brief"
+							: editingQuestionId
+								? "Volver al resumen"
+								: currentIndex >= visibleSlides.length - 1
+									? (normalizedConfig.buttons?.finish ?? "Enviar brief")
+									: currentSlide.id === "welcome"
+										? "Comenzar"
+										: (normalizedConfig.buttons?.next ?? "Continuar")}
 						<FiArrowRight className="h-4 w-4" />
 					</button>
 				</div>
 			</footer>
 		</div>
 	)
+
+	const renderReviewView = () => (
+		<div ref={containerRef} className={cn(theme.root, className)}>
+			<header
+				ref={headerRef}
+				className={cn(
+					"fixed inset-x-0 top-0 z-50 border-b text-white transition-all duration-300",
+					isScrolled
+						? "border-white/10 bg-neutral-950/80 shadow-[0_8px_24px_rgba(0,0,0,0.28)] backdrop-blur-md"
+						: "border-transparent bg-transparent shadow-none backdrop-blur-none"
+				)}
+			>
+				<div className="mx-auto flex h-[88px] w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
+					<div className="flex items-center gap-3">
+						<img
+							src="/logo/logo-icon-white.webp"
+							alt="Raymundo Salazar"
+							className="h-11 w-11"
+						/>
+						<div className="leading-none">
+							<p className="text-[0.7rem] font-semibold uppercase tracking-[0.32em] text-[#FFB38A]">
+								Revisión final
+							</p>
+							<h1 className="text-lg font-semibold tracking-tight sm:text-xl">
+								Raymundo Salazar
+							</h1>
+						</div>
+					</div>
+				</div>
+			</header>
+
+			<main ref={mainRef} className="relative h-screen overflow-y-auto pt-[88px] pb-[112px]">
+				<div
+					ref={contentRef}
+					className="mx-auto flex min-h-[calc(100vh-200px)] w-full items-center justify-center px-4 py-8 sm:px-6 lg:px-8"
+				>
+					<div className="w-full max-w-4xl space-y-6">
+						<div className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/30 backdrop-blur-xl sm:p-8">
+							<p className="text-xs font-semibold uppercase tracking-[0.32em] text-[#FFB38A]">
+								Resumen antes de enviar
+							</p>
+							<h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+								Revise sus respuestas antes de continuar
+							</h2>
+							<p className="mt-3 max-w-3xl text-sm leading-7 text-gray-300 sm:text-base">
+								Si algo no está como quería, puede editar una respuesta específica y
+								volver aquí sin recorrer todo el wizard otra vez.
+							</p>
+						</div>
+
+						<div className="grid gap-4">
+							{summarySlides.map(({ slide, questions }) => (
+								<section
+									key={slide.id}
+									className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-lg shadow-black/20 backdrop-blur-md"
+								>
+									<div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+										<div>
+											{slide.subtitle ? (
+												<p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#FFB38A]">
+													{slide.subtitle}
+												</p>
+											) : null}
+											<h3 className="mt-2 text-2xl font-semibold tracking-tight text-white">
+												{slide.title ?? slide.id}
+											</h3>
+											{slide.description ? (
+												<p className="mt-2 max-w-3xl text-sm leading-7 text-gray-300">
+													{slide.description}
+												</p>
+											) : null}
+										</div>
+										<p className="text-xs uppercase tracking-[0.24em] text-white/40">
+											{questions.length} preguntas
+										</p>
+									</div>
+
+									<div className="mt-5 grid gap-3">
+										{questions.map(question => {
+											const value = answers[question.id]
+											const valueText = getFieldValueText(value)
+											const isEmpty = valueText.trim().length === 0
+
+											return (
+												<div
+													key={question.id}
+													className={cn(
+														"rounded-2xl border p-4 transition-all",
+														isEmpty
+															? "border-amber-400/20 bg-amber-500/5"
+															: "border-white/10 bg-neutral-950/40"
+													)}
+												>
+													<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+														<div className="min-w-0">
+															<p className="text-sm font-medium text-white">
+																{question.label}
+															</p>
+															<p className="mt-2 text-sm leading-7 text-gray-300">
+																{isEmpty
+																	? "Sin respuesta"
+																	: valueText}
+															</p>
+														</div>
+														<button
+															type="button"
+															onClick={() =>
+																startEditingQuestion(question.id)
+															}
+															className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[#FF671933] bg-[#FF67190f] px-4 py-2 text-sm font-semibold text-[#FFB38A] transition hover:border-[#FF671955] hover:bg-[#FF67191a]"
+														>
+															Editar
+															<FiArrowRight className="h-4 w-4" />
+														</button>
+													</div>
+												</div>
+											)
+										})}
+									</div>
+								</section>
+							))}
+						</div>
+					</div>
+				</div>
+			</main>
+
+			<footer
+				ref={footerRef}
+				className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-neutral-950/75 text-white shadow-[0_-8px_24px_rgba(0,0,0,0.22)] backdrop-blur-md"
+			>
+				<div className="mx-auto grid h-[88px] w-full max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 sm:px-6 lg:px-8">
+					<div className="min-w-0">
+						<button
+							type="button"
+							onClick={resumeReview}
+							className={theme.buttonSecondary}
+						>
+							<FiArrowLeft className="h-4 w-4" />
+							Seguir editando
+						</button>
+					</div>
+					<button
+						type="button"
+						onClick={() => void runFinalSubmit()}
+						className={theme.buttonPrimary}
+					>
+						Enviar brief
+						<FiArrowRight className="h-4 w-4" />
+					</button>
+				</div>
+			</footer>
+		</div>
+	)
+
+	return isReviewMode ? renderReviewView() : renderWizardView()
 }

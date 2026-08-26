@@ -2,7 +2,8 @@
 
 ## Qué es
 
-El brief wizard es el formulario por pasos que vive en `/brief` y sirve para capturar contexto comercial, necesidades del proyecto y prioridades.
+El brief wizard es el formulario por pasos que vive en `/brief/[client]` y sirve para capturar contexto comercial, necesidades del proyecto y prioridades.
+La ruta `/brief` ahora es una pantalla de entrada informativa, no el formulario en sí.
 
 Hoy está montado como un wizard configurable en Astro + React, con:
 
@@ -19,17 +20,20 @@ Hoy está montado como un wizard configurable en Astro + React, con:
 - Tipos: `src/lib/brief-wizard/types.ts`
 - Lógica de evaluación y helpers: `src/lib/brief-wizard/evaluate.ts`
 - Render del wizard: `src/components/organisms/Wizard/index.tsx`
+- Gate por cliente y estados de carga/success: `src/components/organisms/BriefClientGate/index.tsx`
 - Render del slide: `src/components/organisms/Wizard/StepSlide.tsx`
-- Página pública del brief: `src/pages/brief.astro`
+- Página de entrada del brief: `src/pages/brief.astro`
 - Ruta por cliente: `src/pages/brief/[client].astro`
+- Ruta de éxito por cliente: `src/pages/brief/[client]/success.astro`
 
 ## Cómo funciona
 
-1. `brief.astro` monta el wizard y le pasa `briefWizardConfig`.
+1. `brief/[client].astro` monta el brief del cliente y le pasa su configuración.
 2. El wizard normaliza la configuración y crea el estado inicial.
 3. Las respuestas se van guardando en `localStorage`.
 4. Al avanzar, se validan las preguntas visibles del slide actual.
-5. En el último paso, el wizard construye el payload y lo envía a Formspree.
+5. En el último paso, el wizard muestra un resumen editable.
+6. Al confirmar, el wizard construye el payload y lo envía a Formspree.
 
 ## Modelo mental
 
@@ -192,15 +196,13 @@ Hoy el wizard guarda un borrador en `localStorage` con una clave fija:
 
 - `portfolio-astro:brief-wizard:v1`
 
-Eso funciona para una sola experiencia general.
+Cada cliente usa su propia variante:
 
-Para una versión por cliente, la clave debe cambiar a algo como:
+- `portfolio-astro:brief-wizard:v1:seguro-con-sentido`
 
-- `portfolio-astro:brief-wizard:v1:seguro-con-proposito`
+Además, cuando el formulario se envía con éxito, se guarda una marca separada:
 
-o mejor:
-
-- `wizardId + clientSlug + version`
+- `portfolio-astro:brief-wizard:v1:seguro-con-sentido:submitted`
 
 Así se evita mezclar respuestas entre clientes.
 
@@ -242,7 +244,22 @@ La página `src/pages/brief/[client].astro`:
 - carga el perfil local del cliente;
 - mezcla los datos del cliente con el wizard base;
 - hidrata `Wizard` con `initialAnswers`, branding y títulos personalizados;
+- redirige a `/brief/[client]/success` si ya existe una respuesta enviada;
 - guarda el borrador con una key separada por `wizardId`.
+
+### Resumen y edición
+
+Antes de enviar, el wizard muestra un resumen de todas las respuestas visibles.
+
+- Cada bloque tiene un botón `Editar`.
+- `Editar` lleva al slide correspondiente y resalta la pregunta.
+- Al continuar desde esa edición, el wizard regresa al resumen en lugar de recorrer todo de nuevo.
+
+### Estados de envío
+
+- Mientras se hace `submit`, el wizard muestra un loading full-page.
+- Si falla, muestra una pantalla de error con opción de reintentar.
+- Si sale bien, marca el brief como enviado y redirige a `/brief/[client]/success`.
 
 ### Pregunta extra para Seguro con Sentido
 
