@@ -1,0 +1,49 @@
+---
+import BriefClientGate from "@/components/organisms/BriefClientGate/index"
+import {
+	buildClientWizardConfig,
+	getClientPaths,
+	getClientProfileBySlug,
+	type BriefClientProfile,
+} from "@/lib/brief-wizard/clientProfiles"
+
+import "@/styles/global.css"
+
+export function getStaticPaths() {
+	return getClientPaths()
+		.map(slug => {
+			const profile = getClientProfileBySlug(slug)
+			return profile ? { params: { client: slug }, props: { profile } } : null
+		})
+		.filter((entry): entry is { params: { client: string }; props: { profile: BriefClientProfile } } =>
+			entry !== null
+		)
+}
+
+const { profile } = Astro.props as { profile: BriefClientProfile }
+const wizardConfig = buildClientWizardConfig(profile)
+const clientPath = `/brief/${profile.slug}`
+const successPath = `${clientPath}/success`
+---
+
+<html lang="es">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{profile.title ?? "Brief"} - Enviado</title>
+		<meta
+			name="description"
+			content={profile.description ?? "Brief personalizado enviado correctamente."}
+		/>
+		<meta name="robots" content="noindex, nofollow" />
+	</head>
+	<body class="bg-neutral-950 text-white">
+		<BriefClientGate
+			client:load
+			config={wizardConfig}
+			clientPath={clientPath}
+			successPath={successPath}
+			mode="success"
+		/>
+	</body>
+</html>

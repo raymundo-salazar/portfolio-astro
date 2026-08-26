@@ -4,6 +4,14 @@ html {
 	scrollbar-gutter: stable both-edges;
 }
 
+button:not(:disabled) {
+	cursor: pointer;
+}
+
+button:disabled {
+	cursor: not-allowed;
+}
+
 ::-webkit-scrollbar {
 	width: 8px;
 }
